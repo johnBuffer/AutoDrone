@@ -5,7 +5,7 @@
 #include <SFML/Graphics.hpp>
 
 
-const std::vector<uint64_t> architecture = { 6, 12, 8, 4 };
+const std::vector<uint64_t> architecture = { 6, 20, 7, 4 };
 
 
 struct Drone : public AiUnit
@@ -22,12 +22,13 @@ struct Drone : public AiUnit
 	};
 
 	Thruster left, right;
-	float thruster_offset = 10.0f;
+	float thruster_offset = 20.0f;
 	float radius;
 	sf::Vector2f position;
 	sf::Vector2f velocity;
 	float angle;
 	float angular_velocity;
+	float max_power = 200.0f;
 
 	Drone()
 		: AiUnit(architecture)
@@ -58,16 +59,6 @@ struct Drone : public AiUnit
 		alive = true;
 	}
 
-	sf::Vector2f getThrust() const
-	{
-		const float angle_left = angle + left.angle - HalfPI;
-		sf::Vector2f thrust_left = left.power * sf::Vector2f(cos(angle_left), sin(angle_left));
-		const float angle_right = angle + right.angle - HalfPI;
-		sf::Vector2f thrust_right = right.power * sf::Vector2f(cos(angle_right), sin(angle_right));
-
-		return thrust_left + thrust_right;
-	}
-
 	static float cross(sf::Vector2f v1, sf::Vector2f v2)
 	{
 		return v1.x * v2.y - v1.y * v2.x;
@@ -78,16 +69,31 @@ struct Drone : public AiUnit
 		return v1.x * v2.x + v1.y * v2.y;
 	}
 
+	sf::Vector2f getThrust() const
+	{
+		const float angle_left = angle + left.angle - HalfPI;
+		sf::Vector2f thrust_left = left.power * sf::Vector2f(cos(angle_left), sin(angle_left));
+		const float angle_right = angle - right.angle - HalfPI;
+		sf::Vector2f thrust_right = right.power * sf::Vector2f(cos(angle_right), sin(angle_right));
+
+		return thrust_left + thrust_right;
+	}
+
 	float getTorque() const
 	{
-		const float left_torque = left.power / thruster_offset * cos(left.angle);
-		const float right_torque = -right.power / thruster_offset * cos(right.angle);
-		return left_torque + right_torque;
+		const float inertia_coef = 0.2f;
+		const float angle_left = left.angle - HalfPI;
+		const float left_torque = left.power / thruster_offset * cross(sf::Vector2f(cos(angle_left), sin(angle_left)), sf::Vector2f(1.0f, 0.0f));
+
+
+		const float angle_right = -right.angle - HalfPI;
+		const float right_torque = right.power / thruster_offset * cross(sf::Vector2f(cos(angle_right), sin(angle_right)), sf::Vector2f(-1.0f, 0.0f));
+		return (left_torque + right_torque) * inertia_coef;
 	}
 
 	void update(float dt)
 	{
-		const sf::Vector2f gravity(0.0f, 100.0f);
+		const sf::Vector2f gravity(0.0f, 150.0f);
 		// Integration
 		velocity += (gravity + getThrust()) * dt;
 		position += velocity * dt;
@@ -95,7 +101,12 @@ struct Drone : public AiUnit
 		angle += angular_velocity * dt;
 	}
 
-	void draw(sf::RenderTarget& target)
+	float getNormalizedAngle() const
+	{
+		return getAngle(sf::Vector2f(cos(angle), sin(angle))) / PI;
+	}
+
+	void draw(sf::RenderTarget& target, sf::Color color = sf::Color::White)
 	{
 		constexpr float RAD_TO_DEG = 57.2958f;
 
@@ -103,7 +114,7 @@ struct Drone : public AiUnit
 		sf::CircleShape c(radius);
 		c.setOrigin(radius, radius);
 		c.setPosition(position);
-		c.setFillColor(sf::Color::Green);
+		c.setFillColor(color);
 		target.draw(c);
 
 		// Draw thrusters
@@ -111,18 +122,18 @@ struct Drone : public AiUnit
 		const float thruster_height = 30.0f;
 		sf::RectangleShape thruster(sf::Vector2f(thruster_width, thruster_height));
 		thruster.setOrigin(thruster_width * 0.5f, thruster_width * 0.5f);
-		thruster.setFillColor(sf::Color::Green);
+		thruster.setFillColor(color);
 		const float ca = cos(angle);
 		const float sa = sin(angle);
 		// Left
 		sf::Vector2f left_position = position - (radius + thruster_offset) * sf::Vector2f(ca, sa);
 		thruster.setPosition(left_position);
-		thruster.setRotation(RAD_TO_DEG * (left.angle + angle));
+		thruster.setRotation(RAD_TO_DEG * (angle + left.angle));
 		target.draw(thruster);
 		// Right
 		sf::Vector2f right_position = position + (radius + thruster_offset) * sf::Vector2f(ca, sa);
 		thruster.setPosition(right_position);
-		thruster.setRotation(RAD_TO_DEG * (right.angle + angle));
+		thruster.setRotation(RAD_TO_DEG * (angle - right.angle));
 		target.draw(thruster);
 		// Draw thrusters power
 		const float power_width = 0.5f * thruster_width;
@@ -130,25 +141,25 @@ struct Drone : public AiUnit
 		power.setOrigin(power_width * 0.5f, 0.0f);
 		power.setFillColor(sf::Color::Red);
 		// Left
-		power.setScale(1.0f, left.power);
+		const float max_power_length = 100.0f;
+		power.setScale(1.0f, left.power / max_power * max_power_length);
 		power.setPosition(left_position);
-		power.setRotation(RAD_TO_DEG * (left.angle + angle));
+		power.setRotation(RAD_TO_DEG * (angle + left.angle));
 		target.draw(power);
 		// Right
-		power.setScale(1.0f, right.power);
+		power.setScale(1.0f, right.power / max_power * max_power_length);
 		power.setPosition(right_position);
-		power.setRotation(RAD_TO_DEG * (right.angle + angle));
+		power.setRotation(RAD_TO_DEG * (angle - right.angle));
 		target.draw(power);
 	}
 
 	void process(const std::vector<float>& outputs) override
 	{
-		const float max_power = 100.0f;
-		const float max_angle = 2.0f * PI;
+		const float max_angle = 0.7f * PI;
 
 		left.power  = max_power * outputs[0];
-		left.angle  = max_angle * (outputs[1] - 0.5f);
+		left.angle  = max_angle * outputs[1];
 		right.power = max_power * outputs[2];
-		right.angle = max_angle * (outputs[3] - 0.5f);
+		right.angle = max_angle * outputs[3];
 	}
 };

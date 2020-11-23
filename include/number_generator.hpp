@@ -37,7 +37,7 @@ struct NumberGenerator
 	void reset()
 	{
 		// TODO add random seed case
-		gen = std::mt19937(0);
+		gen = std::mt19937(rd());
 		distribution.reset();
 	}
 
