@@ -36,7 +36,7 @@ struct Selector
 			next_units[i] = current_units[i];
 		}
 		// Replace the weakest
-		const float mutation_proba = 1.0f / std::max(1.0f, wheel.getAverageFitness());
+		const float mutation_proba = 1.0f / std::max(1.0f, log(wheel.getAverageFitness()));
 		std::cout << "Avg fitness: " << wheel.getAverageFitness() << " mut prob: " << mutation_proba << std::endl;
 		for (uint32_t i(survivings_count); i < population_size; ++i) {
 			const T& unit_1 = wheel.pick(current_units);

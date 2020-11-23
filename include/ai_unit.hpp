@@ -14,13 +14,14 @@ struct AiUnit : public Unit
 		: Unit(Network::getParametersCount(network_architecture) * 32)
 		, network(network_architecture)
 	{
-		dna.initialize<float>(16.0f);
+		dna.initialize<float>(1.0f);
 		updateNetwork();
 	}
 
 	void execute(const std::vector<float>& inputs)
 	{
-		process(network.execute(inputs));
+		const std::vector<float>& outputs = network.execute(inputs);
+		process(outputs);
 	}
 
 	void updateNetwork()
