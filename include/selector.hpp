@@ -36,14 +36,14 @@ struct Selector
 			next_units[i] = current_units[i];
 		}
 		// Replace the weakest
-		const float mutation_proba = 1.0f / std::max(1.0f, log(wheel.getAverageFitness()));
+		const float mutation_proba = 1.0f / std::max(1.0f, log2(wheel.getAverageFitness()));
 		std::cout << "Avg fitness: " << wheel.getAverageFitness() << " mut prob: " << mutation_proba << std::endl;
 		for (uint32_t i(survivings_count); i < population_size; ++i) {
 			const T& unit_1 = wheel.pick(current_units);
 			const T& unit_2 = wheel.pick(current_units);
 			if (unit_1.dna == unit_2.dna) {
 				++evolve_count;
-				next_units[i].loadDNA(DNAUtils::evolve<float>(unit_1.dna, mutation_proba, 0.1f));
+				next_units[i].loadDNA(DNAUtils::evolve<float>(unit_1.dna, mutation_proba, MAX_RANGE * mutation_proba));
 			}
 			else {
 				next_units[i].loadDNA(DNAUtils::makeChild<float>(unit_1.dna, unit_2.dna, mutation_proba));

@@ -11,6 +11,7 @@
 #include "neural_renderer.hpp"
 #include "graph.hpp"
 #include "drone.hpp"
+#include "drone_renderer.hpp"
 
 
 uint32_t getAlive(const std::vector<Drone>& drones)
@@ -60,6 +61,15 @@ int main()
 									sf::Color(74, 158, 170),
 									sf::Color(112, 193, 179) });
 
+	sf::Vector2f mouse_target;
+	const float target_radius = 8.0f;
+	const uint32_t targets_count = 10;
+	std::vector<sf::Vector2f> targets(targets_count);
+	std::vector<uint32_t> drones_target(pop_size, 0);
+	std::vector<float> drones_target_times(pop_size, 0.0f);
+	const float border = 200.0f;
+	targets[0] = sf::Vector2f(border + getRandUnder(win_width - 2.0f * border), border + getRandUnder(win_height - 2.0f * border));
+
 	bool show_just_one = false;
 	bool full_speed = false;
 	bool manual_control = false;
@@ -72,7 +82,7 @@ int main()
 	event_manager.addKeyPressedCallback(sf::Keyboard::D, [&](sfev::CstEv ev) { draw_drones = !draw_drones; });
 
 	const float GUI_MARGIN = 10.0f;
-	Graphic fitness_graph(200, sf::Vector2f(600, 100), sf::Vector2f(GUI_MARGIN, win_height - 100 - GUI_MARGIN));
+	Graphic fitness_graph(1000, sf::Vector2f(win_width - 2.0f * GUI_MARGIN, 100), sf::Vector2f(GUI_MARGIN, win_height - 100 - GUI_MARGIN));
 	fitness_graph.color = sf::Color(96, 211, 148);
 	Graphic bestGraph(200, sf::Vector2f(600, 100), sf::Vector2f(GUI_MARGIN, win_height - 200 - 2.0f * GUI_MARGIN));
 	bestGraph.color = sf::Color(238, 96, 85);
@@ -93,48 +103,79 @@ int main()
 	event_manager.addKeyPressedCallback(sf::Keyboard::Up, [&](sfev::CstEv ev) { drone.left.angle += 0.1f; });
 	event_manager.addKeyPressedCallback(sf::Keyboard::Down, [&](sfev::CstEv ev) { drone.left.angle -= 0.1f; });*/
 
-	const float score_coef = 10.0f;
+	DroneRenderer drone_renderer;
+
+	const float score_coef = 1.0f;
 	float best_score = 1.0f;
 	while (window.isOpen()) {
 		event_manager.processEvents();
 
 		// Initialize drones
 		std::vector<Drone>& population = stadium.getCurrentPopulation();
+		uint32_t current_drone_i = 0;
 		for (Drone& d : population) {
+			drones_target[current_drone_i] = 0;
+			drones_target_times[current_drone_i] = 0.0f;
 			d.position = sf::Vector2f(win_width * 0.5f, win_height * 0.5f);
 			d.reset();
+			++current_drone_i;
 		}
 
-		const float border = 200.0f;
-		sf::Vector2f target = sf::Vector2f(border + getRandUnder(win_width - 2.0f * border), border + getRandUnder(win_height - 2.0f * border));
+		// Initialize targets
+		for (uint32_t i(0); i < targets_count; ++i) {
+			const float border = 200.0f;
+			targets[i] = sf::Vector2f(border + getRandUnder(win_width - 2.0f * border), border + getRandUnder(win_height - 2.0f * border));
+		}
 
 		float time = 0.0f;
 		float avg_fitness = 0.0f;
 
-		while (getAlive(population) && window.isOpen() && (time < 100.0f || manual_control)) {
+		while (getAlive(population) && window.isOpen() && time < 100.0f) {
 			event_manager.processEvents();
 
 			if (manual_control) {
 				const sf::Vector2i mouse_position = sf::Mouse::getPosition(window);
-				target.x = mouse_position.x;
-				target.y = mouse_position.y;
+				mouse_target.x = mouse_position.x;
+				mouse_target.y = mouse_position.y;
 			}
 
 			/*drone.left.power = boost_left * 20.0f;
 			drone.right.power = boost_right * 20.0f;
 			drone.update(dt);*/
 
+			current_drone_i = 0;
 			for (Drone& d : population) {
 				if (d.alive) {
-					const sf::Vector2f to_target = target - d.position;
-					std::vector<float> inputs = { to_target.x / win_width, to_target.y / win_height, d.velocity.x * dt, d.velocity.y * dt, fmod(d.angle, 2.0f * PI) / (2.0f*PI), d.angular_velocity * dt };
+					const sf::Vector2f to_target = manual_control ? mouse_target : targets[drones_target[current_drone_i]] - d.position;
+					
+					const float amp_factor = 4.0f;
+					float to_x = sign(to_target.x) * std::min(1.0f, amp_factor * std::abs(normalize(to_target.x, win_width)));
+					float to_y = sign(to_target.y) * std::min(1.0f, amp_factor * std::abs(normalize(to_target.y, win_height)));
+
+					std::vector<float> inputs = { to_x, to_y, d.velocity.x * dt, d.velocity.y * dt, cos(d.angle), sin(d.angle), d.angular_velocity * dt };
 					d.execute(inputs);
 					d.update(dt);
 
-					const float fitness_denom = std::max(1.0f, getLength(to_target));// *std::max(1.0f, std::abs(d.angular_velocity * dt));
+					const float to_target_dist = getLength(to_target);
+					const float fitness_denom = std::max(1.0f, to_target_dist) *std::max(1.0f, std::abs(d.angular_velocity * dt));
 					d.fitness += score_coef / fitness_denom;
 					avg_fitness += d.fitness;
+
+					// Next target if needed
+					const float target_reward = 100.0f;
+					const float target_time = 3.0f;
+					if (to_target_dist < target_radius + d.radius) {
+						drones_target_times[current_drone_i] += dt;
+						if (drones_target_times[current_drone_i] > target_time) {
+							d.fitness += target_reward;
+							drones_target[current_drone_i] = (drones_target[current_drone_i] + 1) % targets_count;
+						}
+					}
+					else {
+						drones_target_times[current_drone_i] = 0.0f;
+					}
 				}
+				++current_drone_i;
 			}
 
 			for (Drone& d : population) {
@@ -148,32 +189,33 @@ int main()
 			// Render
 			window.clear();
 
+			current_drone_i = 0;
 			if (draw_drones) {
-				uint32_t drone_id = 0;
 				for (Drone& d : population) {
 					if (d.alive) {
-						d.draw(window, colors[drone_id%colors.size()]);
+						drone_renderer.draw(d, window, colors[current_drone_i%colors.size()]);
 						if (show_just_one) {
 							break;
 						}
 					}
-					++drone_id;
+					++current_drone_i;
 				}
 			}
 			
-			const float target_r = 8.0f;
-			sf::CircleShape target_c(target_r);
-			target_c.setFillColor(sf::Color(255, 128, 0));
-			target_c.setOrigin(target_r, target_r);
-			target_c.setPosition(target);
-			window.draw(target_c);
+			if (show_just_one) {
+				sf::CircleShape target_c(target_radius);
+				target_c.setFillColor(sf::Color(255, 128, 0));
+				target_c.setOrigin(target_radius, target_radius);
+				target_c.setPosition(targets[drones_target[current_drone_i]]);
+				window.draw(target_c);
+			}
 
 			// Print Network
 			if (!full_speed && draw_neural) {
 				for (Drone& d : population) {
 					if (d.alive) {
-						const sf::Vector2f to_target = target - d.position;
-						std::vector<float> inputs = { to_target.x / win_width, to_target.y / win_height, d.velocity.x * dt, d.velocity.y * dt, d.getNormalizedAngle(), d.angular_velocity * dt };
+						const sf::Vector2f to_target = manual_control ? mouse_target : targets[drones_target[current_drone_i]] - d.position;
+						std::vector<float> inputs = { normalize(to_target.x, win_width), normalize(to_target.y, win_height), d.velocity.x * dt, d.velocity.y * dt, cos(d.angle), sin(d.angle), d.angular_velocity * dt };
 						network_printer.render(window, d.network, inputs);
 						break;
 					}
