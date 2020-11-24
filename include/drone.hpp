@@ -81,7 +81,7 @@ struct Drone : public AiUnit
 
 	float getTorque() const
 	{
-		const float inertia_coef = 0.25;
+		const float inertia_coef = 0.8f;
 		const float angle_left = left.angle - HalfPI;
 		const float left_torque = left.power / thruster_offset * cross(sf::Vector2f(cos(angle_left), sin(angle_left)), sf::Vector2f(1.0f, 0.0f));
 
@@ -106,60 +106,13 @@ struct Drone : public AiUnit
 		return getAngle(sf::Vector2f(cos(angle), sin(angle))) / PI;
 	}
 
-	void draw(sf::RenderTarget& target, sf::Color color = sf::Color::White)
-	{
-		constexpr float RAD_TO_DEG = 57.2958f;
-
-		// Draw body
-		sf::CircleShape c(radius);
-		c.setOrigin(radius, radius);
-		c.setPosition(position);
-		c.setFillColor(color);
-		target.draw(c);
-
-		// Draw thrusters
-		const float thruster_width = 10.0f;
-		const float thruster_height = 30.0f;
-		sf::RectangleShape thruster(sf::Vector2f(thruster_width, thruster_height));
-		thruster.setOrigin(thruster_width * 0.5f, thruster_width * 0.5f);
-		thruster.setFillColor(color);
-		const float ca = cos(angle);
-		const float sa = sin(angle);
-		// Left
-		sf::Vector2f left_position = position - (radius + thruster_offset) * sf::Vector2f(ca, sa);
-		thruster.setPosition(left_position);
-		thruster.setRotation(RAD_TO_DEG * (angle + left.angle));
-		target.draw(thruster);
-		// Right
-		sf::Vector2f right_position = position + (radius + thruster_offset) * sf::Vector2f(ca, sa);
-		thruster.setPosition(right_position);
-		thruster.setRotation(RAD_TO_DEG * (angle - right.angle));
-		target.draw(thruster);
-		// Draw thrusters power
-		const float power_width = 0.5f * thruster_width;
-		sf::RectangleShape power(sf::Vector2f(power_width, 1.0f));
-		power.setOrigin(power_width * 0.5f, 0.0f);
-		power.setFillColor(sf::Color::Red);
-		// Left
-		const float max_power_length = 100.0f;
-		power.setScale(1.0f, left.power / max_power * max_power_length);
-		power.setPosition(left_position);
-		power.setRotation(RAD_TO_DEG * (angle + left.angle));
-		target.draw(power);
-		// Right
-		power.setScale(1.0f, right.power / max_power * max_power_length);
-		power.setPosition(right_position);
-		power.setRotation(RAD_TO_DEG * (angle - right.angle));
-		target.draw(power);
-	}
-
 	void process(const std::vector<float>& outputs) override
 	{
-		const float max_angle = PI;
+		const float max_angle = 0.35f * PI;
 
 		left.power  = max_power * outputs[0];
-		left.angle  = max_angle * normalize(outputs[1], 1.0f);
+		left.angle  = max_angle * normalize(outputs[1]-0.5f, 1.0f);
 		right.power = max_power * outputs[2];
-		right.angle = max_angle * normalize(outputs[3], 1.0f);
+		right.angle = max_angle * normalize(outputs[3]-0.5f, 1.0f);
 	}
 };

@@ -26,7 +26,8 @@ uint32_t getAlive(const std::vector<Drone>& drones)
 
 bool checkAlive(const Drone& d, sf::Vector2f zone, float tolerance)
 {
-	return d.position.x > -tolerance * zone.x && d.position.x < (1.0f + tolerance)*zone.x && d.position.y > -tolerance * zone.y && d.position.y < (1.0f + tolerance) *zone.y;
+	const bool in_window = d.position.x > -tolerance * zone.x && d.position.x < (1.0f + tolerance)*zone.x && d.position.y > -tolerance * zone.y && d.position.y < (1.0f + tolerance) *zone.y;
+	return in_window && std::abs(d.angle) < PI;
 }
 
 int main()
@@ -101,7 +102,10 @@ int main()
 	event_manager.addKeyReleasedCallback(sf::Keyboard::E, [&](sfev::CstEv ev) { boost_right = false; });
 
 	event_manager.addKeyPressedCallback(sf::Keyboard::Up, [&](sfev::CstEv ev) { drone.left.angle += 0.1f; });
-	event_manager.addKeyPressedCallback(sf::Keyboard::Down, [&](sfev::CstEv ev) { drone.left.angle -= 0.1f; });*/
+	event_manager.addKeyPressedCallback(sf::Keyboard::Down, [&](sfev::CstEv ev) { drone.left.angle -= 0.1f; });
+
+	event_manager.addKeyPressedCallback(sf::Keyboard::Left, [&](sfev::CstEv ev) { drone.right.angle += 0.1f; });
+	event_manager.addKeyPressedCallback(sf::Keyboard::Right, [&](sfev::CstEv ev) { drone.right.angle -= 0.1f; });*/
 
 	DroneRenderer drone_renderer;
 
@@ -139,14 +143,14 @@ int main()
 				mouse_target.y = mouse_position.y;
 			}
 
-			/*drone.left.power = boost_left * 20.0f;
-			drone.right.power = boost_right * 20.0f;
+			/*drone.left.power = boost_left * 400.0f;
+			drone.right.power = boost_right * 400.0f;
 			drone.update(dt);*/
 
 			current_drone_i = 0;
 			for (Drone& d : population) {
 				if (d.alive) {
-					const sf::Vector2f to_target = manual_control ? mouse_target : targets[drones_target[current_drone_i]] - d.position;
+					const sf::Vector2f to_target = (manual_control ? mouse_target : targets[drones_target[current_drone_i]]) - d.position;
 					
 					const float amp_factor = 4.0f;
 					float to_x = sign(to_target.x) * std::min(1.0f, amp_factor * std::abs(normalize(to_target.x, win_width)));
@@ -206,7 +210,7 @@ int main()
 				sf::CircleShape target_c(target_radius);
 				target_c.setFillColor(sf::Color(255, 128, 0));
 				target_c.setOrigin(target_radius, target_radius);
-				target_c.setPosition(targets[drones_target[current_drone_i]]);
+				target_c.setPosition(manual_control ? mouse_target : targets[drones_target[current_drone_i]]);
 				window.draw(target_c);
 			}
 
@@ -224,7 +228,7 @@ int main()
 
 			fitness_graph.render(window);
 
-			//drone.draw(window);
+			//drone_renderer.draw(drone, window);
 
 			window.display();
 		}
