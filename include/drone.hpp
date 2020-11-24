@@ -13,16 +13,33 @@ struct Drone : public AiUnit
 	struct Thruster
 	{
 		float angle;
+		float target_angle;
+		float angle_var_speed;
+		float max_angle;
 		float power;
 
 		Thruster()
 			: angle(0.0f)
+			, target_angle(0.0f)
+			, angle_var_speed(2.0f * PI)
+			, max_angle(0.3f * PI)
 			, power(0.0f)
 		{}
+
+		void update(float dt)
+		{
+			angle += sign(target_angle - angle) * angle_var_speed * dt;
+			if (angle > max_angle) {
+				angle = max_angle;
+			}
+			if (angle < -max_angle) {
+				angle = -max_angle;
+			}
+		}
 	};
 
 	Thruster left, right;
-	float thruster_offset = 100.0f;
+	float thruster_offset = 50.0f;
 	float radius;
 	sf::Vector2f position;
 	sf::Vector2f velocity;
@@ -85,7 +102,6 @@ struct Drone : public AiUnit
 		const float angle_left = left.angle - HalfPI;
 		const float left_torque = left.power / thruster_offset * cross(sf::Vector2f(cos(angle_left), sin(angle_left)), sf::Vector2f(1.0f, 0.0f));
 
-
 		const float angle_right = -right.angle - HalfPI;
 		const float right_torque = right.power / thruster_offset * cross(sf::Vector2f(cos(angle_right), sin(angle_right)), sf::Vector2f(-1.0f, 0.0f));
 		return (left_torque + right_torque) * inertia_coef;
@@ -93,7 +109,9 @@ struct Drone : public AiUnit
 
 	void update(float dt)
 	{
-		const sf::Vector2f gravity(0.0f, 150.0f);
+		left.update(dt);
+		right.update(dt);
+		const sf::Vector2f gravity(0.0f, 1500.0f);
 		// Integration
 		velocity += (gravity + getThrust()) * dt;
 		position += velocity * dt;
@@ -108,11 +126,11 @@ struct Drone : public AiUnit
 
 	void process(const std::vector<float>& outputs) override
 	{
-		const float max_angle = 0.35f * PI;
+		const float max_angle = 0.3f * PI;
 
 		left.power  = max_power * outputs[0];
-		left.angle  = max_angle * normalize(outputs[1]-0.5f, 1.0f);
+		left.target_angle  = max_angle * normalize(outputs[1]-0.5f, 1.0f);
 		right.power = max_power * outputs[2];
-		right.angle = max_angle * normalize(outputs[3]-0.5f, 1.0f);
+		right.target_angle = max_angle * normalize(outputs[3]-0.5f, 1.0f);
 	}
 };

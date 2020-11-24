@@ -30,6 +30,13 @@ bool checkAlive(const Drone& d, sf::Vector2f zone, float tolerance)
 	return in_window && std::abs(d.angle) < PI;
 }
 
+struct Target
+{
+	uint32_t id;
+	float time_in;
+	float time_out;
+};
+
 int main()
 {
 	NumberGenerator<>::initialize();
@@ -66,8 +73,8 @@ int main()
 	const float target_radius = 8.0f;
 	const uint32_t targets_count = 10;
 	std::vector<sf::Vector2f> targets(targets_count);
-	std::vector<uint32_t> drones_target(pop_size, 0);
-	std::vector<float> drones_target_times(pop_size, 0.0f);
+	std::vector<Target> drones_target(pop_size);
+
 	const float border = 200.0f;
 	targets[0] = sf::Vector2f(border + getRandUnder(win_width - 2.0f * border), border + getRandUnder(win_height - 2.0f * border));
 
@@ -118,8 +125,9 @@ int main()
 		std::vector<Drone>& population = stadium.getCurrentPopulation();
 		uint32_t current_drone_i = 0;
 		for (Drone& d : population) {
-			drones_target[current_drone_i] = 0;
-			drones_target_times[current_drone_i] = 0.0f;
+			drones_target[current_drone_i].id = 0;
+			drones_target[current_drone_i].time_in = 0.0f;
+			drones_target[current_drone_i].time_out = 0.0f;
 			d.position = sf::Vector2f(win_width * 0.5f, win_height * 0.5f);
 			d.reset();
 			++current_drone_i;
@@ -150,7 +158,7 @@ int main()
 			current_drone_i = 0;
 			for (Drone& d : population) {
 				if (d.alive) {
-					const sf::Vector2f to_target = (manual_control ? mouse_target : targets[drones_target[current_drone_i]]) - d.position;
+					const sf::Vector2f to_target = (manual_control ? mouse_target : targets[drones_target[current_drone_i].id]) - d.position;
 					
 					const float amp_factor = 4.0f;
 					float to_x = sign(to_target.x) * std::min(1.0f, amp_factor * std::abs(normalize(to_target.x, win_width)));
@@ -161,22 +169,24 @@ int main()
 					d.update(dt);
 
 					const float to_target_dist = getLength(to_target);
-					const float fitness_denom = std::max(1.0f, to_target_dist) *std::max(1.0f, std::abs(d.angular_velocity * dt));
+					const float fitness_denom = std::max(1.0f, to_target_dist) * (1.0f + std::abs(d.angle));
 					d.fitness += score_coef / fitness_denom;
 					avg_fitness += d.fitness;
 
 					// Next target if needed
-					const float target_reward = 100.0f;
+					const float target_reward = 1000.0f;
 					const float target_time = 3.0f;
 					if (to_target_dist < target_radius + d.radius) {
-						drones_target_times[current_drone_i] += dt;
-						if (drones_target_times[current_drone_i] > target_time) {
-							d.fitness += target_reward;
-							drones_target[current_drone_i] = (drones_target[current_drone_i] + 1) % targets_count;
+						drones_target[current_drone_i].time_in += dt;
+						if (drones_target[current_drone_i].time_in > target_time) {
+							d.fitness += target_reward / (1.0f + drones_target[current_drone_i].time_out);
+							drones_target[current_drone_i].time_out = 0.0f;
+							drones_target[current_drone_i].id = (drones_target[current_drone_i].id + 1) % targets_count;
 						}
 					}
 					else {
-						drones_target_times[current_drone_i] = 0.0f;
+						drones_target[current_drone_i].time_out += dt;
+						drones_target[current_drone_i].time_in = 0.0f;
 					}
 				}
 				++current_drone_i;
@@ -210,7 +220,7 @@ int main()
 				sf::CircleShape target_c(target_radius);
 				target_c.setFillColor(sf::Color(255, 128, 0));
 				target_c.setOrigin(target_radius, target_radius);
-				target_c.setPosition(manual_control ? mouse_target : targets[drones_target[current_drone_i]]);
+				target_c.setPosition(manual_control ? mouse_target : targets[drones_target[current_drone_i].id]);
 				window.draw(target_c);
 			}
 
@@ -218,7 +228,7 @@ int main()
 			if (!full_speed && draw_neural) {
 				for (Drone& d : population) {
 					if (d.alive) {
-						const sf::Vector2f to_target = manual_control ? mouse_target : targets[drones_target[current_drone_i]] - d.position;
+						const sf::Vector2f to_target = manual_control ? mouse_target : targets[drones_target[current_drone_i].id] - d.position;
 						std::vector<float> inputs = { normalize(to_target.x, win_width), normalize(to_target.y, win_height), d.velocity.x * dt, d.velocity.y * dt, cos(d.angle), sin(d.angle), d.angular_velocity * dt };
 						network_printer.render(window, d.network, inputs);
 						break;

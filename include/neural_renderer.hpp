@@ -48,7 +48,7 @@ struct NeuralRenderer
 				float intensity = 0.0f;
 
 				if (!layer_id) {
-					intensity = std::min(1.0f, 2.0f * std::abs(inputs[neuron_id]));
+					intensity = std::min(1.0f, std::abs(inputs[neuron_id]));
 				}
 				else if (layer_id == layers_count - 1) {
 					intensity = network.layers.back().values[neuron_id];
