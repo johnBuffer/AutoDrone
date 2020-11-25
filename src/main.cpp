@@ -51,8 +51,6 @@ int main()
 	sf::Vector2f mouse_target;
 	const float target_radius = 8.0f;
 
-	const float border = 200.0f;
-
 	bool show_just_one = false;
 	bool full_speed = false;
 	bool manual_control = false;
