@@ -20,7 +20,7 @@ struct DroneRenderer
 	void draw(const Drone::Thruster& thruster, const Drone& drone, sf::RenderTarget& target, sf::Color color, bool right)
 	{
 		const float offset_dir = (right ? 1.0f : -1.0f);
-		const float power_ratio = drone.left.power / drone.max_power;
+		const float power_ratio = thruster.power / drone.max_power;
 
 		const float thruster_width = 12.0f;
 		const float thruster_height = 32.0f;
@@ -57,10 +57,10 @@ struct DroneRenderer
 
 		const float margin = 2.0f;
 		const float width = thruster_width * 0.5f;
-		const float height = (thruster_height - 12.0f * margin) * 0.1f;
+		const float height = (thruster_height - 11.0f * margin) * 0.1f;
 		sf::RectangleShape power_indicator(sf::Vector2f(width, height));
 		power_indicator.setFillColor(sf::Color::Green);
-		power_indicator.setOrigin(width * (0.5f - 0.35f * offset_dir), height);
+		power_indicator.setOrigin(width * 0.5f, height);
 		power_indicator.setRotation(angle * RAD_TO_DEG);
 		const uint8_t power_percent = power_ratio * 10;
 		sf::Vector2f power_start(position + (0.5f * thruster_height - margin) * thruster_dir);
@@ -68,6 +68,11 @@ struct DroneRenderer
 			power_indicator.setPosition(power_start - float(i) * (height + margin) * thruster_dir);
 			target.draw(power_indicator);
 		}
+
+		/*sf::RectangleShape power_debug(sf::Vector2f(200.0f, 5.0f));
+		power_debug.setPosition(position);
+		power_debug.setRotation(RAD_TO_DEG * (angle - HalfPI));
+		target.draw(power_debug);*/
 	}
 
 	void draw(const Drone& drone, sf::RenderTarget& target, sf::Color color = sf::Color::White)

@@ -5,7 +5,7 @@
 #include <bitset>
 
 
-constexpr float MAX_RANGE = 24.0f;
+constexpr float MAX_RANGE = 10.0f;
 
 
 struct DNA

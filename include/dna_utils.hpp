@@ -42,13 +42,13 @@ struct DNAUtils
 	}
 
 	template<typename T>
-	static void optimize(DNA& dna, const float probability, const float range)
+	static void optimize(DNA& dna, float probability, float range)
 	{
 		const uint64_t element_count = dna.getElementsCount<T>();
 		for (uint64_t i(element_count - 1); i--;) {
 			if (pass(probability)) {
 				const T value = dna.get<T>(i);
-				const T random_offset = NumberGenerator<>::getInstance().get(range);
+				const T random_offset = NumberGenerator<>::getInstance().get(range * MAX_RANGE);
 				dna.set(i, value + random_offset);
 			}
 		}

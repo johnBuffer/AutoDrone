@@ -5,7 +5,7 @@
 #include <SFML/Graphics.hpp>
 
 
-const std::vector<uint64_t> architecture = { 7, 9, 7, 4 };
+const std::vector<uint64_t> architecture = { 7, 9, 4 };
 
 
 struct Drone : public AiUnit
@@ -22,18 +22,21 @@ struct Drone : public AiUnit
 			: angle(0.0f)
 			, target_angle(0.0f)
 			, angle_var_speed(2.0f * PI)
-			, max_angle(0.3f * PI)
+			, max_angle(0.5f * PI)
 			, power(0.0f)
 		{}
 
 		void update(float dt)
 		{
-			angle += sign(target_angle - angle) * angle_var_speed * dt;
+			const float speed = 10.0f;
+			angle += speed * (target_angle - angle) * dt;
 			if (angle > max_angle) {
 				angle = max_angle;
+				target_angle = max_angle;
 			}
 			if (angle < -max_angle) {
 				angle = -max_angle;
+				target_angle = -max_angle;
 			}
 		}
 	};
@@ -45,7 +48,7 @@ struct Drone : public AiUnit
 	sf::Vector2f velocity;
 	float angle;
 	float angular_velocity;
-	float max_power = 1000.0f;
+	float max_power = 2000.0f;
 
 	Drone()
 		: AiUnit(architecture)
@@ -88,9 +91,9 @@ struct Drone : public AiUnit
 
 	sf::Vector2f getThrust() const
 	{
-		const float angle_left = angle + left.angle - HalfPI;
+		const float angle_left = angle - left.angle - HalfPI;
 		sf::Vector2f thrust_left = left.power * sf::Vector2f(cos(angle_left), sin(angle_left));
-		const float angle_right = angle - right.angle - HalfPI;
+		const float angle_right = angle + right.angle - HalfPI;
 		sf::Vector2f thrust_right = right.power * sf::Vector2f(cos(angle_right), sin(angle_right));
 
 		return thrust_left + thrust_right;
@@ -99,10 +102,10 @@ struct Drone : public AiUnit
 	float getTorque() const
 	{
 		const float inertia_coef = 0.8f;
-		const float angle_left = left.angle - HalfPI;
+		const float angle_left =  - left.angle - HalfPI;
 		const float left_torque = left.power / thruster_offset * cross(sf::Vector2f(cos(angle_left), sin(angle_left)), sf::Vector2f(1.0f, 0.0f));
 
-		const float angle_right = -right.angle - HalfPI;
+		const float angle_right = right.angle - HalfPI;
 		const float right_torque = right.power / thruster_offset * cross(sf::Vector2f(cos(angle_right), sin(angle_right)), sf::Vector2f(-1.0f, 0.0f));
 		return (left_torque + right_torque) * inertia_coef;
 	}
@@ -111,7 +114,7 @@ struct Drone : public AiUnit
 	{
 		left.update(dt);
 		right.update(dt);
-		const sf::Vector2f gravity(0.0f, 1500.0f);
+		const sf::Vector2f gravity(0.0f, 1000.0f);
 		// Integration
 		velocity += (gravity + getThrust()) * dt;
 		position += velocity * dt;
@@ -126,11 +129,9 @@ struct Drone : public AiUnit
 
 	void process(const std::vector<float>& outputs) override
 	{
-		const float max_angle = 0.3f * PI;
-
 		left.power  = max_power * outputs[0];
-		left.target_angle  = max_angle * normalize(outputs[1]-0.5f, 1.0f);
+		left.target_angle  = left.max_angle * normalize(outputs[1]-0.5f, 1.0f);
 		right.power = max_power * outputs[2];
-		right.target_angle = max_angle * normalize(outputs[3]-0.5f, 1.0f);
+		right.target_angle = right.max_angle * normalize(outputs[3]-0.5f, 1.0f);
 	}
 };
