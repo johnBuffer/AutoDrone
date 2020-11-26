@@ -39,6 +39,13 @@ struct Selector
 		}
 		// Replace the weakest
 		std::cout << "Gen: " << current_iteration << " Best: " << current_units[0].fitness << std::endl;
+		const uint64_t element_count = current_units[0].dna.getElementsCount<float>();
+		for (uint64_t i(element_count - 1); i--;) {
+			const float value = current_units[0].dna.get<float>(i);
+			std::cout << value << std::endl;
+		}
+		std::cout << std::endl;
+
 		for (uint32_t i(elites_count); i < population_size; ++i) {
 			const T& unit_1 = wheel.pick(current_units);
 			const T& unit_2 = wheel.pick(current_units);

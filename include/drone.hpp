@@ -5,7 +5,7 @@
 #include <SFML/Graphics.hpp>
 
 
-const std::vector<uint64_t> architecture = { 7, 9, 4 };
+const std::vector<uint64_t> architecture = { 9, 13, 9, 2 };
 
 
 struct Drone : public AiUnit
@@ -17,6 +17,12 @@ struct Drone : public AiUnit
 		float angle_var_speed;
 		float max_angle;
 		float power;
+		float ratio;
+
+		void setAngle(float ratio)
+		{
+			target_angle = max_angle * ratio;
+		}
 
 		Thruster()
 			: angle(0.0f)
@@ -30,19 +36,12 @@ struct Drone : public AiUnit
 		{
 			const float speed = 10.0f;
 			angle += speed * (target_angle - angle) * dt;
-			if (angle > max_angle) {
-				angle = max_angle;
-				target_angle = max_angle;
-			}
-			if (angle < -max_angle) {
-				angle = -max_angle;
-				target_angle = -max_angle;
-			}
+			ratio = angle / max_angle;
 		}
 	};
 
 	Thruster left, right;
-	float thruster_offset = 50.0f;
+	float thruster_offset = 45.0f;
 	float radius;
 	sf::Vector2f position;
 	sf::Vector2f velocity;
@@ -130,8 +129,8 @@ struct Drone : public AiUnit
 	void process(const std::vector<float>& outputs) override
 	{
 		left.power  = max_power * outputs[0];
-		left.target_angle  = left.max_angle * normalize(outputs[1]-0.5f, 1.0f);
-		right.power = max_power * outputs[2];
-		right.target_angle = right.max_angle * normalize(outputs[3]-0.5f, 1.0f);
+		//left.setAngle(2.0f * (outputs[1] - 0.5f));
+		right.power = max_power * outputs[1];
+		//right.setAngle(2.0f * (outputs[3] - 0.5f));
 	}
 };

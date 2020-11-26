@@ -19,11 +19,11 @@ int main()
 {
 	NumberGenerator<>::initialize();
 
-	const uint32_t win_width = 1600;
-	const uint32_t win_height = 900;
+	const uint32_t win_width = 1920;
+	const uint32_t win_height = 1080;
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 4;
-	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "AutoDrone", sf::Style::Default, settings);
+	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "AutoDrone", sf::Style::Fullscreen, settings);
 	window.setVerticalSyncEnabled(true);
 
 	bool slow_motion = false;
@@ -37,14 +37,14 @@ int main()
 	const uint32_t pop_size = 800;
 	Stadium stadium(pop_size, sf::Vector2f(win_width, win_height));
 
-	std::vector<sf::Color> colors({ sf::Color(80, 81, 79), 
-		                            sf::Color(121, 85, 83),
+	std::vector<sf::Color> colors({ sf::Color(36, 123, 160),
 									sf::Color(161, 88, 86),
-									sf::Color(242, 95, 92),
 									sf::Color(249, 160, 97),
+									sf::Color(80, 81, 79), 
+		                            sf::Color(121, 85, 83),
+									sf::Color(242, 95, 92),
 									sf::Color(255, 224, 102),
 									sf::Color(146, 174, 131),
-									sf::Color(36, 123, 160),
 									sf::Color(74, 158, 170),
 									sf::Color(112, 193, 179) });
 
@@ -56,11 +56,13 @@ int main()
 	bool manual_control = false;
 	bool draw_neural = true;
 	bool draw_drones = true;
+	bool draw_fitness = true;
 	event_manager.addKeyPressedCallback(sf::Keyboard::E, [&](sfev::CstEv ev) { full_speed = !full_speed; window.setVerticalSyncEnabled(!full_speed); });
 	event_manager.addKeyPressedCallback(sf::Keyboard::M, [&](sfev::CstEv ev) { manual_control = !manual_control; });
 	event_manager.addKeyPressedCallback(sf::Keyboard::S, [&](sfev::CstEv ev) { show_just_one = !show_just_one; });
 	event_manager.addKeyPressedCallback(sf::Keyboard::N, [&](sfev::CstEv ev) { draw_neural = !draw_neural; });
 	event_manager.addKeyPressedCallback(sf::Keyboard::D, [&](sfev::CstEv ev) { draw_drones = !draw_drones; });
+	event_manager.addKeyPressedCallback(sf::Keyboard::F, [&](sfev::CstEv ev) { draw_fitness = !draw_fitness; });
 
 	const float GUI_MARGIN = 10.0f;
 	Graphic fitness_graph(1000, sf::Vector2f(win_width - 2.0f * GUI_MARGIN, 100), sf::Vector2f(GUI_MARGIN, win_height - 100 - GUI_MARGIN));
@@ -69,7 +71,7 @@ int main()
 	bestGraph.color = sf::Color(238, 96, 85);
 
 	NeuralRenderer network_printer;
-	const sf::Vector2f network_size = network_printer.getSize(3, 9);
+	const sf::Vector2f network_size = network_printer.getSize(4, 13);
 	network_printer.position = sf::Vector2f(win_width - network_size.x - GUI_MARGIN, win_height - network_size.y - GUI_MARGIN);
 
 	/*Drone drone(sf::Vector2f(win_width * 0.5f, win_height * 0.5f));
@@ -146,15 +148,26 @@ int main()
 				for (Drone& d : population) {
 					if (d.alive) {
 						const sf::Vector2f to_target = stadium.targets[stadium.drones_state[current_drone_i].id] - d.position;
-						std::vector<float> inputs = { normalize(to_target.x, win_width), normalize(to_target.y, win_height), d.velocity.x * dt, d.velocity.y * dt, cos(d.angle), sin(d.angle), d.angular_velocity * dt };
+						std::vector<float> inputs = { 
+							normalize(to_target.x, win_width),
+							normalize(to_target.y, win_height),
+							d.velocity.x * dt,
+							d.velocity.y * dt,
+							cos(d.angle),
+							sin(d.angle),
+							d.angular_velocity * dt,
+							d.left.ratio,
+							d.right.ratio,
+						};
 						network_printer.render(window, d.network, inputs);
 						break;
 					}
 				}
 			}
 
-			fitness_graph.render(window);
-
+			if (draw_fitness) {
+				fitness_graph.render(window);
+			}
 			//drone_renderer.draw(drone, window, colors[0]);
 
 			window.display();

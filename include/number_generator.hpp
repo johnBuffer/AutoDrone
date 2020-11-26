@@ -48,7 +48,7 @@ struct NumberGenerator
 
 	static void initialize()
 	{
-		s_instance = std::make_unique<NumberGenerator>(false);
+		s_instance = std::make_unique<NumberGenerator>(true);
 	}
 
 	std::uniform_real_distribution<float> distribution;
