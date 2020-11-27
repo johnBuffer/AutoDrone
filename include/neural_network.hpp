@@ -68,14 +68,17 @@ struct Network
 {
 	Network()
 		: input_size(0)
+		, last_input(0)
 	{}
 
 	Network(const uint64_t input_size_)
 		: input_size(input_size_)
+		, last_input(input_size_)
 	{}
 
 	Network(const std::vector<uint64_t>& layers_sizes)
 		: input_size(layers_sizes[0])
+		, last_input(input_size)
 	{
 		for (uint64_t i(1); i < layers_sizes.size(); ++i) {
 			addLayer(layers_sizes[i]);
@@ -94,6 +97,7 @@ struct Network
 
 	const std::vector<float>& execute(const std::vector<float>& input)
 	{
+		last_input = input;
 		if (input.size() == input_size) {
 			layers.front().process(input);
 			const uint64_t layers_count = layers.size();
@@ -125,4 +129,5 @@ struct Network
 
 	uint64_t input_size;
 	std::vector<Layer> layers;
+	std::vector<float> last_input;
 };

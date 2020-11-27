@@ -20,7 +20,6 @@ struct DroneRenderer
 	void draw(const Drone::Thruster& thruster, const Drone& drone, sf::RenderTarget& target, sf::Color color, bool right)
 	{
 		const float offset_dir = (right ? 1.0f : -1.0f);
-		const float power_ratio = thruster.power / drone.max_power;
 
 		const float thruster_width = 14.0f;
 		const float thruster_height = 32.0f;
@@ -66,9 +65,9 @@ struct DroneRenderer
 		target.draw(push);
 
 		const float rand_pulse_left = (1.0f + rand() % 10 * 0.05f);
-		const float v_scale_left = power_ratio * rand_pulse_left;
+		const float v_scale_left = thruster.power_ratio * rand_pulse_left;
 		flame_sprite.setPosition(position + 0.5f * thruster_height * sf::Vector2f(ca_left, sa_left));
-		flame_sprite.setScale(0.15f * power_ratio * rand_pulse_left, 0.15f * v_scale_left);
+		flame_sprite.setScale(0.15f * thruster.power_ratio * rand_pulse_left, 0.15f * v_scale_left);
 		flame_sprite.setRotation(RAD_TO_DEG * angle);
 		target.draw(flame_sprite);
 
@@ -86,7 +85,7 @@ struct DroneRenderer
 		power_indicator.setFillColor(sf::Color::Green);
 		power_indicator.setOrigin(width * 0.5f, height);
 		power_indicator.setRotation(angle * RAD_TO_DEG);
-		const uint8_t power_percent = power_ratio * 10;
+		const uint8_t power_percent = thruster.power_ratio * 10;
 		sf::Vector2f power_start(position + (0.5f * thruster_height - margin) * thruster_dir);
 		for (uint8_t i(0); i < power_percent; ++i) {
 			power_indicator.setPosition(power_start - float(i) * (height + margin) * thruster_dir);
@@ -153,19 +152,19 @@ struct DroneRenderer
 		c_led.setOrigin(led_size + led_offset, led_size);
 		c_led.setRotation(drone.angle * RAD_TO_DEG);
 		c_led.setPosition(drone.position);
-		c_led.setFillColor(getRedGreenRatio(drone.network.layers.back().values[1]));
+		c_led.setFillColor(getRedGreenRatio(drone.left.angle_ratio));
 		target.draw(c_led);
 
 		c_led.setOrigin(led_size - led_offset, led_size);
-		c_led.setFillColor(getRedGreenRatio(drone.network.layers.back().values[3]));
+		c_led.setFillColor(getRedGreenRatio(drone.right.angle_ratio));
 		target.draw(c_led);
 
 		c_led.setOrigin(led_size, led_size - 0.45f * r);
-		c_led.setFillColor(getRedGreenRatio(drone.network.layers[0].values[0]));
+		c_led.setFillColor(getRedGreenRatio(1.0f - drone.network.last_input[0]));
 		target.draw(c_led);
 
 		c_led.setOrigin(led_size, led_size + 0.5f * r);
-		c_led.setFillColor(getRedGreenRatio(drone.network.layers[0].values[1]));
+		c_led.setFillColor(getRedGreenRatio(1.0f - drone.network.last_input[1]));
 		target.draw(c_led);
 	}
 };

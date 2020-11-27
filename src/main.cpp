@@ -114,11 +114,6 @@ int main()
 				mouse_target.y = mouse_position.y;
 			}
 
-			/*const float t_power = 1000.0f;
-			drone.left.power = boost_left * t_power;
-			drone.right.power = boost_right * t_power;
-			drone.update(dt);*/
-
 			stadium.update(dt);
 
 			fitness_graph.setLastValue(stadium.current_iteration.best_fitness);
@@ -148,7 +143,7 @@ int main()
 			}
 
 			// Print Network
-			if (!full_speed && draw_neural) {
+			/*if (!full_speed && draw_neural) {
 				for (Drone& d : population) {
 					if (d.alive) {
 						const sf::Vector2f to_target = stadium.targets[stadium.drones_state[current_drone_i].id] - d.position;
@@ -160,14 +155,14 @@ int main()
 							cos(d.angle),
 							sin(d.angle),
 							d.angular_velocity * dt,
-							d.left.ratio,
-							d.right.ratio,
+							d.left.angle_ratio,
+							d.right.angle_ratio,
 						};
 						network_printer.render(window, d.network, inputs);
 						break;
 					}
 				}
-			}
+			}*/
 
 			if (draw_fitness) {
 				fitness_graph.render(window);

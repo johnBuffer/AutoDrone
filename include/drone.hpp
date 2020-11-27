@@ -13,16 +13,29 @@ struct Drone : public AiUnit
 {
 	struct Thruster
 	{
+	private:
+		float max_power;
+	public:
+		float power_ratio;
 		float angle;
 		float target_angle;
 		float angle_var_speed;
 		float max_angle;
-		float power;
-		float ratio;
+		float angle_ratio;
 
 		void setAngle(float ratio)
 		{
 			target_angle = max_angle * ratio;
+		}
+
+		void setPower(float ratio)
+		{
+			power_ratio = std::max(0.0f, std::min(1.0f, ratio));
+		}
+
+		float getPower() const
+		{
+			return power_ratio * max_power;
 		}
 
 		Thruster()
@@ -30,14 +43,14 @@ struct Drone : public AiUnit
 			, target_angle(0.0f)
 			, angle_var_speed(2.0f * PI)
 			, max_angle(0.5f * PI)
-			, power(0.0f)
+			, max_power(2000.0f)
 		{}
 
 		void update(float dt)
 		{
 			const float speed = 10.0f;
 			angle += speed * (target_angle - angle) * dt;
-			ratio = angle / max_angle;
+			angle_ratio = angle / max_angle;
 		}
 	};
 
@@ -48,7 +61,6 @@ struct Drone : public AiUnit
 	sf::Vector2f velocity;
 	float angle;
 	float angular_velocity;
-	float max_power = 2000.0f;
 
 	Drone()
 		: AiUnit(architecture)
@@ -82,9 +94,9 @@ struct Drone : public AiUnit
 		velocity = sf::Vector2f(0.0f, 0.0f);
 		angle = 0.0f;
 		angular_velocity = 0.0f;
-		left.power = 0.0f;
+		left.power_ratio = 0.0f;
 		left.angle = 0.0f;
-		right.power = 0.0f;
+		right.power_ratio = 0.0f;
 		right.angle = 0.0f;
 
 		fitness = 0.0f;
@@ -104,9 +116,9 @@ struct Drone : public AiUnit
 	sf::Vector2f getThrust() const
 	{
 		const float angle_left = angle - left.angle - HalfPI;
-		sf::Vector2f thrust_left = left.power * sf::Vector2f(cos(angle_left), sin(angle_left));
+		sf::Vector2f thrust_left = left.getPower() * sf::Vector2f(cos(angle_left), sin(angle_left));
 		const float angle_right = angle + right.angle - HalfPI;
-		sf::Vector2f thrust_right = right.power * sf::Vector2f(cos(angle_right), sin(angle_right));
+		sf::Vector2f thrust_right = right.getPower() * sf::Vector2f(cos(angle_right), sin(angle_right));
 
 		return thrust_left + thrust_right;
 	}
@@ -115,10 +127,10 @@ struct Drone : public AiUnit
 	{
 		const float inertia_coef = 0.8f;
 		const float angle_left =  - left.angle - HalfPI;
-		const float left_torque = left.power / thruster_offset * cross(sf::Vector2f(cos(angle_left), sin(angle_left)), sf::Vector2f(1.0f, 0.0f));
+		const float left_torque = left.getPower() / thruster_offset * cross(sf::Vector2f(cos(angle_left), sin(angle_left)), sf::Vector2f(1.0f, 0.0f));
 
 		const float angle_right = right.angle - HalfPI;
-		const float right_torque = right.power / thruster_offset * cross(sf::Vector2f(cos(angle_right), sin(angle_right)), sf::Vector2f(-1.0f, 0.0f));
+		const float right_torque = right.getPower() / thruster_offset * cross(sf::Vector2f(cos(angle_right), sin(angle_right)), sf::Vector2f(-1.0f, 0.0f));
 		return (left_torque + right_torque) * inertia_coef;
 	}
 
@@ -141,9 +153,9 @@ struct Drone : public AiUnit
 
 	void process(const std::vector<float>& outputs) override
 	{
-		left.power  = max_power * 0.5f * (1.0f + outputs[0]);
+		left.setPower(1.0f + outputs[0]);
 		left.setAngle(outputs[1]);
-		right.power = max_power * 0.5f * (1.0f + outputs[2]);
+		right.setPower(1.0f + outputs[2]);
 		right.setAngle(outputs[3]);
 	}
 };

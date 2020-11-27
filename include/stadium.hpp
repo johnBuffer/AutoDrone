@@ -116,8 +116,8 @@ struct Stadium
 				cos(d.angle),
 				sin(d.angle),
 				d.angular_velocity * dt,
-				d.left.ratio,
-				d.right.ratio,
+				d.left.angle_ratio,
+				d.right.angle_ratio,
 			};
 			d.execute(inputs);
 			d.update(dt);
