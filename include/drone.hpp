@@ -25,7 +25,7 @@ struct Drone : public AiUnit
 
 		void setAngle(float ratio)
 		{
-			target_angle = max_angle * ratio;
+			target_angle = max_angle * std::max(-1.0f, std::min(1.0f, ratio));
 		}
 
 		void setPower(float ratio)
@@ -42,8 +42,8 @@ struct Drone : public AiUnit
 			: angle(0.0f)
 			, target_angle(0.0f)
 			, angle_var_speed(2.0f * PI)
-			, max_angle(0.5f * PI)
-			, max_power(2000.0f)
+			, max_angle(0.35f * PI)
+			, max_power(800.0f)
 		{}
 
 		void update(float dt)
@@ -138,12 +138,15 @@ struct Drone : public AiUnit
 	{
 		left.update(dt);
 		right.update(dt);
-		const sf::Vector2f gravity(0.0f, 1000.0f);
+		const sf::Vector2f gravity(0.0f, 0.0f);
 		// Integration
 		velocity += (gravity + getThrust()) * dt;
-		position += velocity * dt;
+		//position += velocity * dt;
 		angular_velocity += getTorque() * dt;
 		angle += angular_velocity * dt;
+
+		angular_velocity -= angle * 70.0f * dt;
+		angular_velocity -= angular_velocity * 15.0f * dt;
 	}
 
 	float getNormalizedAngle() const

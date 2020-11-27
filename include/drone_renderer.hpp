@@ -17,7 +17,7 @@ struct DroneRenderer
 		flame_sprite.setScale(0.15f, 0.15f);
 	}
 
-	void draw(const Drone::Thruster& thruster, const Drone& drone, sf::RenderTarget& target, sf::Color color, bool right)
+	void draw(const Drone::Thruster& thruster, const Drone& drone, sf::RenderTarget& target, sf::Color color, bool right, const sf::RenderStates& state)
 	{
 		const float offset_dir = (right ? 1.0f : -1.0f);
 
@@ -47,9 +47,9 @@ struct DroneRenderer
 		push.setPosition(on_body_position);
 		push.setRotation(push_angle * RAD_TO_DEG);
 		push.setFillColor(push_color);
-		target.draw(push);
+		target.draw(push, state);
 		push.setScale(push_length, 0.5f);
-		target.draw(push);
+		target.draw(push, state);
 
 		const sf::Vector2f on_thruster_position_2 = (position + 5.0f * thruster_dir);
 		const sf::Vector2f on_body_position_2 = drone.position + 8.0f * drone_normal;
@@ -60,23 +60,23 @@ struct DroneRenderer
 		push.setScale(push_width, 1.0f);
 		push.setPosition(on_body_position_2);
 		push.setRotation(push_angle_2 * RAD_TO_DEG);
-		target.draw(push);
+		target.draw(push, state);
 		push.setScale(push_length_2, 0.5f);
-		target.draw(push);
+		target.draw(push, state);
 
-		const float rand_pulse_left = (1.0f + rand() % 10 * 0.05f);
+		const float rand_pulse_left = (1.0f + rand() % 15 * 0.05f);
 		const float v_scale_left = thruster.power_ratio * rand_pulse_left;
 		flame_sprite.setPosition(position + 0.5f * thruster_height * sf::Vector2f(ca_left, sa_left));
 		flame_sprite.setScale(0.15f * thruster.power_ratio * rand_pulse_left, 0.15f * v_scale_left);
 		flame_sprite.setRotation(RAD_TO_DEG * angle);
-		target.draw(flame_sprite);
+		target.draw(flame_sprite, state);
 
 		sf::RectangleShape thruster_body(sf::Vector2f(thruster_width, thruster_height));
 		thruster_body.setOrigin(thruster_width * 0.5f, thruster_height * 0.5f);
 		thruster_body.setFillColor(color);
 		thruster_body.setPosition(position);
 		thruster_body.setRotation(RAD_TO_DEG * angle);
-		target.draw(thruster_body);
+		target.draw(thruster_body, state);
 
 		const float margin = 2.0f;
 		const float width = thruster_width * 0.5f;
@@ -89,11 +89,11 @@ struct DroneRenderer
 		sf::Vector2f power_start(position + (0.5f * thruster_height - margin) * thruster_dir);
 		for (uint8_t i(0); i < power_percent; ++i) {
 			power_indicator.setPosition(power_start - float(i) * (height + margin) * thruster_dir);
-			target.draw(power_indicator);
+			target.draw(power_indicator, state);
 		}
 	}
 
-	void draw(const Drone& drone, sf::RenderTarget& target, sf::Color color = sf::Color::White)
+	void draw(const Drone& drone, sf::RenderTarget& target, const sf::RenderStates& state, sf::Color color = sf::Color::White)
 	{
 		// Draw body
 		const float drone_width = drone.radius + drone.thruster_offset;
@@ -102,11 +102,11 @@ struct DroneRenderer
 		lat.setPosition(drone.position);
 		lat.setRotation(RAD_TO_DEG * drone.angle);
 		lat.setFillColor(sf::Color(70, 70, 70));
-		target.draw(lat);
+		target.draw(lat, state);
 		
-		draw(drone.left, drone, target, color, false);
-		draw(drone.right, drone, target, color, true);
-		drawBody(drone, color, target);
+		draw(drone.left, drone, target, color, false, state);
+		draw(drone.right, drone, target, color, true, state);
+		drawBody(drone, color, target, state);
 	}
 
 	sf::Color getRedGreenRatio(float ratio) const
@@ -115,9 +115,9 @@ struct DroneRenderer
 		return sf::Color(255 * r, 255 * (1.0f - r), 0);
 	}
 
-	void drawBody(const Drone& drone, const sf::Color& color, sf::RenderTarget& target)
+	void drawBody(const Drone& drone, const sf::Color& color, sf::RenderTarget& target, const sf::RenderStates& state)
 	{
-		const float angle_ratio = std::min(1.0f, std::abs(drone.angle) / HalfPI);
+		const float angle_ratio = std::min(1.0f, std::abs(sin(drone.angle)));
 		const sf::Color eye_color = getRedGreenRatio(angle_ratio);
 
 		const float r = drone.radius * 1.25f;
@@ -137,14 +137,14 @@ struct DroneRenderer
 			va[i+1].color = sf::Color(120, 120, 120);
 		}
 
-		target.draw(va);
+		target.draw(va, state);
 
 		const float inner_r = drone.radius * 0.35f;
 		sf::CircleShape c(inner_r);
 		c.setOrigin(inner_r, inner_r);
 		c.setPosition(drone.position);
 		c.setFillColor(eye_color);
-		target.draw(c);
+		target.draw(c, state);
 
 		const float led_size = 2.0f;
 		const float led_offset = 12.0f;
@@ -153,18 +153,18 @@ struct DroneRenderer
 		c_led.setRotation(drone.angle * RAD_TO_DEG);
 		c_led.setPosition(drone.position);
 		c_led.setFillColor(getRedGreenRatio(drone.left.angle_ratio));
-		target.draw(c_led);
+		target.draw(c_led, state);
 
 		c_led.setOrigin(led_size - led_offset, led_size);
 		c_led.setFillColor(getRedGreenRatio(drone.right.angle_ratio));
-		target.draw(c_led);
+		target.draw(c_led, state);
 
 		c_led.setOrigin(led_size, led_size - 0.45f * r);
 		c_led.setFillColor(getRedGreenRatio(1.0f - drone.network.last_input[0]));
-		target.draw(c_led);
+		target.draw(c_led, state);
 
 		c_led.setOrigin(led_size, led_size + 0.5f * r);
 		c_led.setFillColor(getRedGreenRatio(1.0f - drone.network.last_input[1]));
-		target.draw(c_led);
+		target.draw(c_led, state);
 	}
 };
