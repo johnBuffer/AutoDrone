@@ -5,6 +5,8 @@
 #include "selection_wheel.hpp"
 #include "unit.hpp"
 #include "double_buffer.hpp"
+#include <fstream>
+#include <sstream>
 
 
 const float population_elite_ratio = 0.05f;
@@ -22,6 +24,27 @@ struct Selector
 		, elites_count(as<uint32_t>(agents_count * population_elite_ratio))
 		, wheel(survivings_count)
 	{
+		const std::string base_filename = "../selector_output";
+		std::string filename = base_filename;
+		std::ifstream ifs(filename);
+		uint32_t try_count = 0;
+		while (ifs.good()) {
+			++try_count;
+			std::stringstream sstr;
+			sstr << base_filename << "_" << try_count;
+			filename = sstr.str();
+			ifs.open(filename);
+		}
+
+		out_file.open(filename);
+		if (out_file.fail()) {
+			std::cout << "Cannot create '" << filename << "'" << std::endl;
+		}
+	}
+
+	~Selector()
+	{
+		out_file.close();
 	}
 
 	void nextGeneration()
@@ -39,12 +62,14 @@ struct Selector
 		}
 		// Replace the weakest
 		std::cout << "Gen: " << current_iteration << " Best: " << current_units[0].fitness << std::endl;
-		const uint64_t element_count = current_units[0].dna.getElementsCount<float>();
-		for (uint64_t i(element_count - 1); i--;) {
-			const float value = current_units[0].dna.get<float>(i);
-			std::cout << value << std::endl;
+		if (current_iteration%dump_frequency == 0) {
+			const uint64_t element_count = current_units[0].dna.getElementsCount<float>();
+			for (uint64_t i(element_count - 1); i--;) {
+				const float value = current_units[0].dna.get<float>(i);
+				out_file << value << " ";
+			}
+			out_file << std::endl;
 		}
-		std::cout << std::endl;
 
 		for (uint32_t i(elites_count); i < population_size; ++i) {
 			const T& unit_1 = wheel.pick(current_units);
@@ -104,6 +129,8 @@ struct Selector
 	const uint32_t elites_count;
 	DoubleObject<std::vector<T>> population;
 	SelectionWheel wheel;
+	std::fstream out_file;
+	uint32_t dump_frequency = 100;
 
 	uint32_t current_iteration;
 };

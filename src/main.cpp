@@ -19,11 +19,11 @@ int main()
 {
 	NumberGenerator<>::initialize();
 
-	const uint32_t win_width = 1920;
-	const uint32_t win_height = 1080;
+	const uint32_t win_width = 1600;
+	const uint32_t win_height = 900;
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 4;
-	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "AutoDrone", sf::Style::Fullscreen, settings);
+	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "AutoDrone", sf::Style::Default, settings);
 	window.setVerticalSyncEnabled(true);
 
 	bool slow_motion = false;
@@ -90,6 +90,10 @@ int main()
 	event_manager.addKeyPressedCallback(sf::Keyboard::Right, [&](sfev::CstEv ev) { drone.right.target_angle -= 0.1f; });*/
 
 	DroneRenderer drone_renderer;
+
+	/*for (Drone& d : stadium.selector.getCurrentPopulation()) {
+		d.loadDNAFromFile("../dump_9_13_9_4.txt");
+	}*/
 
 	sf::Clock clock;
 	while (window.isOpen()) {

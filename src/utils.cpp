@@ -68,7 +68,7 @@ uint32_t getIntUnderNonReset(const uint32_t max)
 
 float normalize(float value, float range)
 {
-	return 2.0f * value / range;
+	return value / range;
 }
 
 float getAngle(const sf::Vector2f & v)

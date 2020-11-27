@@ -51,10 +51,10 @@ struct NeuralRenderer
 					intensity = std::min(1.0f, std::abs(inputs[neuron_id]));
 				}
 				else if (layer_id == layers_count - 1) {
-					intensity = network.layers.back().values[neuron_id];
+					intensity = std::abs(network.layers.back().values[neuron_id]);
 				}
 				else {
-					intensity = network.layers[layer_id-1].values[neuron_id];
+					intensity = std::abs(network.layers[layer_id-1].values[neuron_id]);
 					current_neuron_radius = neuron_radius * 0.8f;
 				}
 

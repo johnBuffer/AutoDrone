@@ -3,9 +3,10 @@
 #include "ai_unit.hpp"
 #include "utils.hpp"
 #include <SFML/Graphics.hpp>
+#include <fstream>
 
 
-const std::vector<uint64_t> architecture = { 9, 13, 9, 2 };
+const std::vector<uint64_t> architecture = { 9, 13, 9, 4 };
 
 
 struct Drone : public AiUnit
@@ -55,6 +56,18 @@ struct Drone : public AiUnit
 		, position(0.0f, 0.0f)
 	{
 
+	}
+
+	void loadDNAFromFile(const std::string& filename)
+	{
+		std::ifstream infile(filename);
+		float value;
+		uint32_t i(0);
+		while (infile >> value) {
+			dna.set<float>(i, value);
+			++i;
+		}
+		infile.close();
 	}
 
 	Drone(const sf::Vector2f& pos)
@@ -128,9 +141,9 @@ struct Drone : public AiUnit
 
 	void process(const std::vector<float>& outputs) override
 	{
-		left.power  = max_power * outputs[0];
-		//left.setAngle(2.0f * (outputs[1] - 0.5f));
-		right.power = max_power * outputs[1];
-		//right.setAngle(2.0f * (outputs[3] - 0.5f));
+		left.power  = max_power * 0.5f * (1.0f + outputs[0]);
+		left.setAngle(outputs[1]);
+		right.power = max_power * 0.5f * (1.0f + outputs[2]);
+		right.setAngle(outputs[3]);
 	}
 };
