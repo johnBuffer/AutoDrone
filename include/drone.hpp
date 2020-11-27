@@ -5,7 +5,7 @@
 #include <SFML/Graphics.hpp>
 
 
-const std::vector<uint64_t> architecture = { 9, 13, 9, 2 };
+const std::vector<uint64_t> architecture = { 7, 9, 2 };
 
 
 struct Drone : public AiUnit
@@ -30,7 +30,9 @@ struct Drone : public AiUnit
 			, angle_var_speed(2.0f * PI)
 			, max_angle(0.5f * PI)
 			, power(0.0f)
-		{}
+		{
+			setAngle(-0.5f);
+		}
 
 		void update(float dt)
 		{
@@ -129,8 +131,6 @@ struct Drone : public AiUnit
 	void process(const std::vector<float>& outputs) override
 	{
 		left.power  = max_power * outputs[0];
-		//left.setAngle(2.0f * (outputs[1] - 0.5f));
 		right.power = max_power * outputs[1];
-		//right.setAngle(2.0f * (outputs[3] - 0.5f));
 	}
 };

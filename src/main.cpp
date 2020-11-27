@@ -71,7 +71,7 @@ int main()
 	bestGraph.color = sf::Color(238, 96, 85);
 
 	NeuralRenderer network_printer;
-	const sf::Vector2f network_size = network_printer.getSize(4, 13);
+	const sf::Vector2f network_size = network_printer.getSize(3, 9);
 	network_printer.position = sf::Vector2f(win_width - network_size.x - GUI_MARGIN, win_height - network_size.y - GUI_MARGIN);
 
 	/*Drone drone(sf::Vector2f(win_width * 0.5f, win_height * 0.5f));
@@ -155,9 +155,7 @@ int main()
 							d.velocity.y * dt,
 							cos(d.angle),
 							sin(d.angle),
-							d.angular_velocity * dt,
-							d.left.ratio,
-							d.right.ratio,
+							d.angular_velocity * dt
 						};
 						network_printer.render(window, d.network, inputs);
 						break;
