@@ -6,7 +6,7 @@
 #include <fstream>
 
 
-const std::vector<uint64_t> architecture = { 9, 13, 9, 4 };
+const std::vector<uint64_t> architecture = { 7, 15, 4 };
 
 
 struct Drone : public AiUnit
@@ -41,14 +41,14 @@ struct Drone : public AiUnit
 		Thruster()
 			: angle(0.0f)
 			, target_angle(0.0f)
-			, angle_var_speed(2.0f * PI)
+			, angle_var_speed(5.0f)
 			, max_angle(0.5f * PI)
 			, max_power(2000.0f)
 		{}
 
 		void update(float dt)
 		{
-			const float speed = 10.0f;
+			const float speed = angle_var_speed;
 			angle += speed * (target_angle - angle) * dt;
 			angle_ratio = angle / max_angle;
 		}
@@ -153,9 +153,9 @@ struct Drone : public AiUnit
 
 	void process(const std::vector<float>& outputs) override
 	{
-		left.setPower(1.0f + outputs[0]);
+		left.setPower(0.5f * (1.0f + outputs[0]));
 		left.setAngle(outputs[1]);
-		right.setPower(1.0f + outputs[2]);
+		right.setPower(0.5f * (1.0f + outputs[2]));
 		right.setAngle(outputs[3]);
 	}
 };

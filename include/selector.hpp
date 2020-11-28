@@ -25,18 +25,23 @@ struct Selector
 		, wheel(survivings_count)
 	{
 		const std::string base_filename = "../selector_output";
-		std::string filename = base_filename;
+		std::string filename = base_filename + ".txt";
 		std::ifstream ifs(filename);
 		uint32_t try_count = 0;
-		while (ifs.good()) {
+		while (ifs) {
+			ifs.close();
+			std::cout << filename << " already exists." << std::endl;
 			++try_count;
 			std::stringstream sstr;
-			sstr << base_filename << "_" << try_count;
+			sstr << base_filename << "_" << try_count << ".txt";
 			filename = sstr.str();
 			ifs.open(filename);
 		}
+		ifs.close();
 
-		out_file.open(filename);
+		std::cout << "Writing dumps in " << filename << std::endl;
+
+		out_file = std::ofstream(filename);
 		if (out_file.fail()) {
 			std::cout << "Cannot create '" << filename << "'" << std::endl;
 		}
@@ -129,7 +134,7 @@ struct Selector
 	const uint32_t elites_count;
 	DoubleObject<std::vector<T>> population;
 	SelectionWheel wheel;
-	std::fstream out_file;
+	std::ofstream out_file;
 	uint32_t dump_frequency = 100;
 
 	uint32_t current_iteration;

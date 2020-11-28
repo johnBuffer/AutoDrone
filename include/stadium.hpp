@@ -104,10 +104,6 @@ struct Stadium
 		if (d.alive) {
 			const sf::Vector2f to_target = targets[drones_state[i].id] - d.position;
 
-			const float amp_factor = 16.0f;
-			float to_x = sign(to_target.x) * std::min(1.0f, amp_factor * std::abs(normalize(to_target.x, area_size.x)));
-			float to_y = sign(to_target.y) * std::min(1.0f, amp_factor * std::abs(normalize(to_target.y, area_size.y)));
-
 			std::vector<float> inputs = {
 				normalize(to_target.x, area_size.x),
 				normalize(to_target.y, area_size.y),
@@ -115,9 +111,7 @@ struct Stadium
 				d.velocity.y * dt,
 				cos(d.angle),
 				sin(d.angle),
-				d.angular_velocity * dt,
-				d.left.angle_ratio,
-				d.right.angle_ratio,
+				d.angular_velocity * dt
 			};
 			d.execute(inputs);
 			d.update(dt);

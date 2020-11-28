@@ -12,9 +12,9 @@ struct GLayer
 
 struct NeuralRenderer
 {
-	void render(sf::RenderTarget& target, Network& network, const std::vector<float>& inputs)
+	void render(sf::RenderTarget& target, Network& network)
 	{
-		network.execute(inputs);
+		//network.execute(inputs);
 		updateLayers(network);
 
 		const uint64_t layers_count = layers.size();
@@ -26,7 +26,7 @@ struct NeuralRenderer
 				uint32_t weight_id = 0;
 				for (const sf::Vector2f& prev_neuron_pos : prev_layer.neurons_positions) {
 					const float link_weight = network.layers[i - 1].weights[neuron_id][weight_id];
-					float link_value = link_weight * (i == 1 ? inputs : network.layers[i - 2].values)[weight_id];
+					float link_value = link_weight * (i == 1 ? network.last_input : network.layers[i - 2].values)[weight_id];
 					const sf::Color link_color = link_value > 0.0f ? sf::Color(96, 211, 148) : sf::Color(238, 96, 85);
 					const float link_width = 2.0f * log2(1.0f + std::abs(link_value));
 					target.draw(getLine(neuron_pos, prev_neuron_pos, link_width, link_color));
@@ -48,7 +48,7 @@ struct NeuralRenderer
 				float intensity = 0.0f;
 
 				if (!layer_id) {
-					intensity = std::min(1.0f, std::abs(inputs[neuron_id]));
+					intensity = std::min(1.0f, std::abs(network.last_input[neuron_id]));
 				}
 				else if (layer_id == layers_count - 1) {
 					intensity = std::abs(network.layers.back().values[neuron_id]);

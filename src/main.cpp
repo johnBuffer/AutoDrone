@@ -71,29 +71,10 @@ int main()
 	bestGraph.color = sf::Color(238, 96, 85);
 
 	NeuralRenderer network_printer;
-	const sf::Vector2f network_size = network_printer.getSize(4, 13);
+	const sf::Vector2f network_size = network_printer.getSize(3, 15);
 	network_printer.position = sf::Vector2f(win_width - network_size.x - GUI_MARGIN, win_height - network_size.y - GUI_MARGIN);
 
-	/*Drone drone(sf::Vector2f(win_width * 0.5f, win_height * 0.5f));
-	bool boost_left = false;
-	bool boost_right = false;
-	event_manager.addKeyPressedCallback(sf::Keyboard::A, [&](sfev::CstEv ev) { boost_left = true; });
-	event_manager.addKeyReleasedCallback(sf::Keyboard::A, [&](sfev::CstEv ev) { boost_left = false; });
-
-	event_manager.addKeyPressedCallback(sf::Keyboard::E, [&](sfev::CstEv ev) { boost_right = true; });
-	event_manager.addKeyReleasedCallback(sf::Keyboard::E, [&](sfev::CstEv ev) { boost_right = false; });
-
-	event_manager.addKeyPressedCallback(sf::Keyboard::Up, [&](sfev::CstEv ev) { drone.left.target_angle += 0.1f; });
-	event_manager.addKeyPressedCallback(sf::Keyboard::Down, [&](sfev::CstEv ev) { drone.left.target_angle -= 0.1f; });
-
-	event_manager.addKeyPressedCallback(sf::Keyboard::Left, [&](sfev::CstEv ev) { drone.right.target_angle += 0.1f; });
-	event_manager.addKeyPressedCallback(sf::Keyboard::Right, [&](sfev::CstEv ev) { drone.right.target_angle -= 0.1f; });*/
-
 	DroneRenderer drone_renderer;
-
-	/*for (Drone& d : stadium.selector.getCurrentPopulation()) {
-		d.loadDNAFromFile("../dump_9_13_9_4.txt");
-	}*/
 
 	sf::Clock clock;
 	while (window.isOpen()) {
@@ -143,26 +124,14 @@ int main()
 			}
 
 			// Print Network
-			/*if (!full_speed && draw_neural) {
+			if (!full_speed && draw_neural) {
 				for (Drone& d : population) {
 					if (d.alive) {
-						const sf::Vector2f to_target = stadium.targets[stadium.drones_state[current_drone_i].id] - d.position;
-						std::vector<float> inputs = { 
-							normalize(to_target.x, win_width),
-							normalize(to_target.y, win_height),
-							d.velocity.x * dt,
-							d.velocity.y * dt,
-							cos(d.angle),
-							sin(d.angle),
-							d.angular_velocity * dt,
-							d.left.angle_ratio,
-							d.right.angle_ratio,
-						};
-						network_printer.render(window, d.network, inputs);
+						network_printer.render(window, d.network);
 						break;
 					}
 				}
-			}*/
+			}
 
 			if (draw_fitness) {
 				fitness_graph.render(window);
