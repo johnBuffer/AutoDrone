@@ -65,13 +65,11 @@ int main()
 	event_manager.addKeyPressedCallback(sf::Keyboard::F, [&](sfev::CstEv ev) { draw_fitness = !draw_fitness; });
 
 	const float GUI_MARGIN = 10.0f;
-	Graphic fitness_graph(1000, sf::Vector2f(win_width - 2.0f * GUI_MARGIN, 100), sf::Vector2f(GUI_MARGIN, win_height - 100 - GUI_MARGIN));
+	Graphic fitness_graph(3000, sf::Vector2f(win_width - 2.0f * GUI_MARGIN, 100), sf::Vector2f(GUI_MARGIN, win_height - 100 - GUI_MARGIN));
 	fitness_graph.color = sf::Color(96, 211, 148);
-	Graphic bestGraph(200, sf::Vector2f(600, 100), sf::Vector2f(GUI_MARGIN, win_height - 200 - 2.0f * GUI_MARGIN));
-	bestGraph.color = sf::Color(238, 96, 85);
-
+	
 	NeuralRenderer network_printer;
-	const sf::Vector2f network_size = network_printer.getSize(3, 15);
+	const sf::Vector2f network_size = network_printer.getSize(4, 9);
 	network_printer.position = sf::Vector2f(win_width - network_size.x - GUI_MARGIN, win_height - network_size.y - GUI_MARGIN);
 
 	DroneRenderer drone_renderer;

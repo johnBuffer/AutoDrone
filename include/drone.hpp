@@ -6,7 +6,7 @@
 #include <fstream>
 
 
-const std::vector<uint64_t> architecture = { 7, 15, 4 };
+const std::vector<uint64_t> architecture = { 7, 9, 9 , 4 };
 
 
 struct Drone : public AiUnit
