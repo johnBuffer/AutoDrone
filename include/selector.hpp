@@ -25,15 +25,14 @@ struct Selector
 		, wheel(survivings_count)
 	{
 		const std::string base_filename = "../selector_output";
-		std::string filename = base_filename + ".txt";
+		std::string filename = base_filename + ".bin";
 		std::ifstream ifs(filename);
 		uint32_t try_count = 0;
 		while (ifs) {
 			ifs.close();
-			std::cout << filename << " already exists." << std::endl;
 			++try_count;
 			std::stringstream sstr;
-			sstr << base_filename << "_" << try_count << ".txt";
+			sstr << base_filename << "_" << try_count << ".bin";
 			filename = sstr.str();
 			ifs.open(filename);
 		}
@@ -70,8 +69,8 @@ struct Selector
 		if (current_iteration%dump_frequency == 0) {
 			const uint64_t element_count = current_units[0].dna.getElementsCount<float>();
 			for (uint64_t i(element_count - 1); i--;) {
-				const float value = current_units[0].dna.get<float>(i);
-				out_file << value << " ";
+				float value = current_units[0].dna.get<float>(i);
+				out_file.write((char*)&value, sizeof(float));
 			}
 			out_file << std::endl;
 		}
