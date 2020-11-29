@@ -48,6 +48,9 @@ int main()
 	sf::Vector2f mouse_target;
 	const float target_radius = 8.0f;
 
+	const uint32_t pop_size = 800;
+	Stadium stadium(pop_size, sf::Vector2f(win_width, win_height));
+
 	bool show_just_one = false;
 	bool full_speed = false;
 	bool manual_control = false;
@@ -70,6 +73,7 @@ int main()
 	network_printer.position = sf::Vector2f(win_width - network_size.x - GUI_MARGIN, win_height - network_size.y - GUI_MARGIN);
 
 	DroneRenderer drone_renderer;
+	sf::RenderStates state;
 
 	sf::Clock clock;
 	while (window.isOpen()) {
@@ -90,18 +94,17 @@ int main()
 				mouse_target.y = mouse_position.y;
 			}
 
-			stadium.update(dt);
+			stadium.update(dt, !full_speed);
 
 			fitness_graph.setLastValue(stadium.current_iteration.best_fitness);
 
 			// Render
 			window.clear();
-
 			uint32_t current_drone_i = 0;
 			if (draw_drones) {
 				for (Drone& d : population) {
 					if (d.alive) {
-						drone_renderer.draw(d, window, colors[current_drone_i%colors.size()]);
+						drone_renderer.draw(d, window, state, colors[current_drone_i%colors.size()], !full_speed);
 						if (show_just_one) {
 							break;
 						}

@@ -45,7 +45,7 @@ struct Drone : public AiUnit
 			, target_angle(0.0f)
 			, angle_var_speed(5.0f)
 			, max_angle(0.5f * PI)
-			, max_power(2000.0f)
+			, max_power(800.0f)
 
 		{}
 
@@ -142,20 +142,17 @@ struct Drone : public AiUnit
 	{
 		left.update(dt);
 		right.update(dt);
-		const sf::Vector2f gravity(0.0f, 0.0f);
+		const sf::Vector2f gravity(0.0f, 1000.0f);
 		// Integration
 		velocity += (gravity + getThrust()) * dt;
-		//position += velocity * dt;
+		position += velocity * dt;
 		angular_velocity += getTorque() * dt;
 		angle += angular_velocity * dt;
-
-		angular_velocity -= angle * 70.0f * dt;
-		angular_velocity -= angular_velocity * 15.0f * dt;
 
 		if (update_smoke) {
 			const sf::Vector2f drone_dir(cos(angle), sin(angle));
 			const float smoke_vert_offset = 80.0f;
-			const float smoke_duration = 1.7f;
+			const float smoke_duration = 1.25f;
 			const float smoke_speed_coef = 0.8f;
 			if (left.power_ratio > 0.1f) {
 				const float left_angle = angle - left.angle + HalfPI;
