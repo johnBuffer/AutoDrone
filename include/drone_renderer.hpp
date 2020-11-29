@@ -31,15 +31,17 @@ struct DroneRenderer
 		const sf::Vector2f drone_dir = sf::Vector2f(ca, sa);
 		const sf::Vector2f drone_normal = sf::Vector2f(-sa, ca);
 		const sf::Vector2f thruster_dir = sf::Vector2f(ca_left, sa_left);
-		sf::Vector2f position = drone.position  + offset_dir * (drone.radius + drone.thruster_offset) * drone_dir;
+		const sf::Vector2f thruster_normal = sf::Vector2f(-sa_left, ca_left);
+		sf::Vector2f position = drone.position + offset_dir * (drone.radius + drone.thruster_offset) * drone_dir;
 
-		const sf::Vector2f on_thruster_position = (position - 7.0f * thruster_dir);
-		const sf::Vector2f on_body_position = drone.position - 12.0f * drone_normal;
+		// Draw piston
+		const sf::Vector2f on_thruster_position = position + (offset_dir * thruster_width * 0.4f) * thruster_normal - 7.0f * thruster_dir;
+		const sf::Vector2f on_body_position = drone.position + 20.0f * offset_dir * drone_dir - 12.0f * drone_normal;
 		sf::Color push_color(100, 100, 100);
 		const sf::Vector2f body_to_thruster = on_thruster_position - on_body_position;
 		const float push_length = getLength(body_to_thruster);
 		const float push_angle = getAngle(body_to_thruster) + PI;
-		const float push_width = 42.0f;
+		const float push_width = 22.0f;
 		const float push_height = 4.0f;
 		sf::RectangleShape push(sf::Vector2f(1.0f, push_height));
 		push.setOrigin(1.0f, push_height * 0.5f);
@@ -51,20 +53,21 @@ struct DroneRenderer
 		push.setScale(push_length, 0.5f);
 		target.draw(push, state);
 
-		const sf::Vector2f on_thruster_position_2 = (position + 5.0f * thruster_dir);
-		const sf::Vector2f on_body_position_2 = drone.position + 8.0f * drone_normal;
+		const sf::Vector2f on_thruster_position_2 = position + (offset_dir * thruster_width * 0.4f) * thruster_normal + 8.0f * thruster_dir;
+		const sf::Vector2f on_body_position_2 = drone.position + 10.0f * offset_dir * drone_dir + 10.0f * drone_normal;
 		const sf::Vector2f body_to_thruster_2 = on_thruster_position_2 - on_body_position_2;
 		const float push_length_2 = getLength(body_to_thruster_2);
 		const float push_angle_2 = getAngle(body_to_thruster_2) + PI;
 
-		push.setScale(push_width, 1.0f);
+		push.setScale(push_width * 1.25f, 1.0f);
 		push.setPosition(on_body_position_2);
 		push.setRotation(push_angle_2 * RAD_TO_DEG);
 		target.draw(push, state);
 		push.setScale(push_length_2, 0.5f);
 		target.draw(push, state);
 
-		const float rand_pulse_left = (1.0f + rand() % 15 * 0.05f);
+		// Draw flame
+		const float rand_pulse_left = (1.0f + rand() % 10 * 0.05f);
 		const float v_scale_left = thruster.power_ratio * rand_pulse_left;
 		flame_sprite.setPosition(position + 0.5f * thruster_height * sf::Vector2f(ca_left, sa_left));
 		flame_sprite.setScale(0.15f * thruster.power_ratio * rand_pulse_left, 0.15f * v_scale_left);
