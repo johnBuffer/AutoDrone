@@ -9,12 +9,19 @@ struct DroneRenderer
 {
 	sf::Texture flame;
 	sf::Sprite flame_sprite;
+
+	sf::Texture smoke;
+	sf::Sprite smoke_sprite;
 	DroneRenderer()
 	{
 		flame.loadFromFile("../flame.png");
 		flame_sprite.setTexture(flame);
 		flame_sprite.setOrigin(118.0f, 67.0f);
 		flame_sprite.setScale(0.15f, 0.15f);
+
+		smoke.loadFromFile("../smoke.png");
+		smoke_sprite.setTexture(smoke);
+		smoke_sprite.setOrigin(126, 134);
 	}
 
 	void draw(const Drone::Thruster& thruster, const Drone& drone, sf::RenderTarget& target, sf::Color color, bool right, const sf::RenderStates& state)
@@ -96,7 +103,7 @@ struct DroneRenderer
 		}
 	}
 
-	void draw(const Drone& drone, sf::RenderTarget& target, const sf::RenderStates& state, sf::Color color = sf::Color::White)
+	void draw(const Drone& drone, sf::RenderTarget& target, const sf::RenderStates& state, sf::Color color = sf::Color::White, bool draw_smoke = true)
 	{
 		// Draw body
 		const float drone_width = drone.radius + drone.thruster_offset;
@@ -106,10 +113,21 @@ struct DroneRenderer
 		lat.setRotation(RAD_TO_DEG * drone.angle);
 		lat.setFillColor(sf::Color(70, 70, 70));
 		target.draw(lat, state);
-		
+
 		draw(drone.left, drone, target, color, false, state);
 		draw(drone.right, drone, target, color, true, state);
 		drawBody(drone, color, target, state);
+
+		if (draw_smoke) {
+			for (const Smoke& s : drone.smokes) {
+				const float smoke_scale = 0.25f * s.scale;
+				smoke_sprite.setPosition(s.position);
+				smoke_sprite.setRotation(RAD_TO_DEG * s.angle);
+				smoke_sprite.setScale(smoke_scale, smoke_scale);
+				smoke_sprite.setColor(sf::Color(255, 255, 255, 0.025f * s.speed * (1.0f - s.getRatio())));
+				target.draw(smoke_sprite, state);
+			}
+		}
 	}
 
 	sf::Color getRedGreenRatio(float ratio) const
@@ -130,14 +148,14 @@ struct DroneRenderer
 		va[0].position = drone.position;
 		va[0].color = eye_color;
 		for (uint32_t i(1); i < quality / 2 + 2; ++i) {
-			const float angle = drone.angle - (i-1) * da;
+			const float angle = drone.angle - (i - 1) * da;
 			va[i].position = drone.position + r * sf::Vector2f(cos(angle), sin(angle));
 			va[i].color = color;
 		}
 		for (uint32_t i(quality / 2 + 1); i < quality + 2; ++i) {
-			const float angle = drone.angle - (i-1) * da;
-			va[i+1].position = drone.position + 0.65f * r * sf::Vector2f(cos(angle), sin(angle));
-			va[i+1].color = sf::Color(120, 120, 120);
+			const float angle = drone.angle - (i - 1) * da;
+			va[i + 1].position = drone.position + 0.65f * r * sf::Vector2f(cos(angle), sin(angle));
+			va[i + 1].color = sf::Color(120, 120, 120);
 		}
 
 		target.draw(va, state);

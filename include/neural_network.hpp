@@ -32,13 +32,13 @@ struct Layer
 		const uint64_t inputs_count = inputs.size();
 		// For each neuron
 		for (uint64_t i(0); i < neurons_count; ++i) {
-			float result = -bias[i];
+			float result = bias[i];
 			// Compute weighted sum of inputs
 			for (uint64_t j(0); j < inputs_count; ++j) {
 				result += weights[i][j] * inputs[j];
 			}
 			// Output result
-			values[i] = tanh(result);
+			values[i] = sigm(result);
 		}
 	}
 

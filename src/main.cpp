@@ -27,7 +27,7 @@ int main()
 	window.setVerticalSyncEnabled(true);
 
 	bool slow_motion = false;
-	const float base_dt = 0.008f;
+	const float base_dt = 0.007f;
 	float dt = base_dt;
 
 	sfev::EventManager event_manager(window);
@@ -47,16 +47,6 @@ int main()
 
 	sf::Vector2f mouse_target;
 	const float target_radius = 8.0f;
-
-	const float GUI_MARGIN = 10.0f;
-	Graphic fitness_graph(1000, sf::Vector2f(win_width - 2.0f * GUI_MARGIN, 100), sf::Vector2f(GUI_MARGIN, win_height - 100 - GUI_MARGIN));
-	fitness_graph.color = sf::Color(96, 211, 148);
-	Graphic bestGraph(200, sf::Vector2f(600, 100), sf::Vector2f(GUI_MARGIN, win_height - 200 - 2.0f * GUI_MARGIN));
-	bestGraph.color = sf::Color(238, 96, 85);
-
-	NeuralRenderer network_printer;
-	const sf::Vector2f network_size = network_printer.getSize(4, 13);
-	network_printer.position = sf::Vector2f(win_width - network_size.x - GUI_MARGIN, win_height - network_size.y - GUI_MARGIN);
 
 	Drone drone(sf::Vector2f(0.0f, 0.0f));
 	drone.reset();
@@ -99,14 +89,15 @@ int main()
 		drone.left.setPower(booster_power_left * boost_left);
 		drone.right.setPower(booster_power_right * boost_right);
 
-		drone.update(dt);
+		drone.update(dt, true);
 
 		// Render
-		window.clear();
+		window.clear(sf::Color(191, 219, 247));
 
 		sf::RenderStates state;
 		state.transform.translate(win_width * 0.5f, win_height * 0.5f);
-		state.transform.scale(2.0f, 2.0f);
+		const float scale = 3.0f;
+		state.transform.scale(scale, scale);
 
 		drone_renderer.draw(drone, window, state, colors[current_color % colors.size()]);
 
