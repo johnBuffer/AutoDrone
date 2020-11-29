@@ -48,19 +48,6 @@ int main()
 	sf::Vector2f mouse_target;
 	const float target_radius = 8.0f;
 
-	bool show_just_one = false;
-	bool full_speed = false;
-	bool manual_control = false;
-	bool draw_neural = true;
-	bool draw_drones = true;
-	bool draw_fitness = true;
-	event_manager.addKeyPressedCallback(sf::Keyboard::E, [&](sfev::CstEv ev) { full_speed = !full_speed; window.setVerticalSyncEnabled(!full_speed); });
-	event_manager.addKeyPressedCallback(sf::Keyboard::M, [&](sfev::CstEv ev) { manual_control = !manual_control; });
-	event_manager.addKeyPressedCallback(sf::Keyboard::S, [&](sfev::CstEv ev) { show_just_one = !show_just_one; });
-	event_manager.addKeyPressedCallback(sf::Keyboard::N, [&](sfev::CstEv ev) { draw_neural = !draw_neural; });
-	event_manager.addKeyPressedCallback(sf::Keyboard::D, [&](sfev::CstEv ev) { draw_drones = !draw_drones; });
-	event_manager.addKeyPressedCallback(sf::Keyboard::F, [&](sfev::CstEv ev) { draw_fitness = !draw_fitness; });
-
 	const float GUI_MARGIN = 10.0f;
 	Graphic fitness_graph(1000, sf::Vector2f(win_width - 2.0f * GUI_MARGIN, 100), sf::Vector2f(GUI_MARGIN, win_height - 100 - GUI_MARGIN));
 	fitness_graph.color = sf::Color(96, 211, 148);
@@ -83,16 +70,13 @@ int main()
 
 	uint32_t current_color = 0;
 	
-	event_manager.addKeyReleasedCallback(sf::Keyboard::Space, [&](sfev::CstEv ev) { ++current_color; });
+	event_manager.addKeyReleasedCallback(sf::Keyboard::LShift, [&](sfev::CstEv ev) { ++current_color; });
 
-	event_manager.addKeyPressedCallback(sf::Keyboard::A, [&](sfev::CstEv ev) { boost_left = true; });
-	event_manager.addKeyReleasedCallback(sf::Keyboard::A, [&](sfev::CstEv ev) { boost_left = false; });
+	event_manager.addKeyPressedCallback(sf::Keyboard::Space, [&](sfev::CstEv ev) { boost_left = true; });
+	event_manager.addKeyReleasedCallback(sf::Keyboard::Space, [&](sfev::CstEv ev) { boost_left = false; });
 
-	event_manager.addKeyPressedCallback(sf::Keyboard::A, [&](sfev::CstEv ev) { boost_left = true; });
-	event_manager.addKeyReleasedCallback(sf::Keyboard::A, [&](sfev::CstEv ev) { boost_left = false; });
-
-	event_manager.addKeyPressedCallback(sf::Keyboard::E, [&](sfev::CstEv ev) { boost_right = true; });
-	event_manager.addKeyReleasedCallback(sf::Keyboard::E, [&](sfev::CstEv ev) { boost_right = false; });
+	event_manager.addKeyPressedCallback(sf::Keyboard::Numpad0, [&](sfev::CstEv ev) { boost_right = true; });
+	event_manager.addKeyReleasedCallback(sf::Keyboard::Numpad0, [&](sfev::CstEv ev) { boost_right = false; });
 
 	event_manager.addKeyPressedCallback(sf::Keyboard::D, [&](sfev::CstEv ev) { left_angle += 0.05f;  drone.left.setAngle(left_angle); });
 	event_manager.addKeyPressedCallback(sf::Keyboard::Q, [&](sfev::CstEv ev) { left_angle -= 0.05f;  drone.left.setAngle(left_angle); });
