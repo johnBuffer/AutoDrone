@@ -4,9 +4,11 @@
 #include "utils.hpp"
 #include <SFML/Graphics.hpp>
 #include <fstream>
+#include "smoke.hpp"
 
 
-const std::vector<uint64_t> architecture = { 7, 9, 9 , 4 };
+
+const std::vector<uint64_t> architecture = { 7, 9, 4 };
 
 
 struct Drone : public AiUnit
@@ -25,7 +27,7 @@ struct Drone : public AiUnit
 
 		void setAngle(float ratio)
 		{
-			target_angle = max_angle * ratio;
+			target_angle = max_angle * std::max(-1.0f, std::min(1.0f, ratio));
 		}
 
 		void setPower(float ratio)
@@ -44,6 +46,7 @@ struct Drone : public AiUnit
 			, angle_var_speed(5.0f)
 			, max_angle(0.5f * PI)
 			, max_power(2000.0f)
+
 		{}
 
 		void update(float dt)
@@ -55,12 +58,13 @@ struct Drone : public AiUnit
 	};
 
 	Thruster left, right;
-	float thruster_offset = 45.0f;
+	float thruster_offset = 35.0f;
 	float radius;
 	sf::Vector2f position;
 	sf::Vector2f velocity;
 	float angle;
 	float angular_velocity;
+	std::list<Smoke> smokes;
 
 	Drone()
 		: AiUnit(architecture)
@@ -134,16 +138,47 @@ struct Drone : public AiUnit
 		return (left_torque + right_torque) * inertia_coef;
 	}
 
-	void update(float dt)
+	void update(float dt, bool update_smoke)
 	{
 		left.update(dt);
 		right.update(dt);
-		const sf::Vector2f gravity(0.0f, 1000.0f);
+		const sf::Vector2f gravity(0.0f, 0.0f);
 		// Integration
 		velocity += (gravity + getThrust()) * dt;
-		position += velocity * dt;
+		//position += velocity * dt;
 		angular_velocity += getTorque() * dt;
 		angle += angular_velocity * dt;
+
+		angular_velocity -= angle * 70.0f * dt;
+		angular_velocity -= angular_velocity * 15.0f * dt;
+
+		if (update_smoke) {
+			const sf::Vector2f drone_dir(cos(angle), sin(angle));
+			const float smoke_vert_offset = 80.0f;
+			const float smoke_duration = 1.7f;
+			const float smoke_speed_coef = 0.8f;
+			if (left.power_ratio > 0.1f) {
+				const float left_angle = angle - left.angle + HalfPI;
+				const sf::Vector2f left_direction(cos(left_angle), sin(left_angle));
+				const sf::Vector2f left_pos = position - (thruster_offset + 20.0f) * drone_dir + left_direction * smoke_vert_offset * left.power_ratio;
+
+				smokes.push_back(Smoke(left_pos, left_direction, smoke_speed_coef * left.getPower(), left.power_ratio, smoke_duration* left.power_ratio));
+			}
+
+			if (right.power_ratio > 0.1f) {
+				const float right_angle = angle + right.angle + HalfPI;
+				const sf::Vector2f right_direction(cos(right_angle), sin(right_angle));
+				const sf::Vector2f right_pos = position + (thruster_offset + 20.0f) * drone_dir + right_direction * smoke_vert_offset * right.power_ratio;
+
+				smokes.push_back(Smoke(right_pos, right_direction, smoke_speed_coef * right.getPower(), right.power_ratio, smoke_duration* right.power_ratio));
+			}
+
+			for (Smoke& s : smokes) {
+				s.update(dt);
+			}
+
+			smokes.remove_if([this](const Smoke& s) { return s.done(); });
+		}
 	}
 
 	float getNormalizedAngle() const
@@ -153,9 +188,9 @@ struct Drone : public AiUnit
 
 	void process(const std::vector<float>& outputs) override
 	{
-		left.setPower(0.5f * (1.0f + outputs[0]));
-		left.setAngle(outputs[1]);
-		right.setPower(0.5f * (1.0f + outputs[2]));
-		right.setAngle(outputs[3]);
+		left.setPower(outputs[0]);
+		left.setAngle(2.0f * (outputs[1] - 0.5f));
+		right.setPower(outputs[2]);
+		right.setAngle(2.0f * (outputs[3] - 0.5f));
 	}
 };

@@ -19,23 +19,20 @@ int main()
 {
 	NumberGenerator<>::initialize();
 
-	const uint32_t win_width = 1600;
-	const uint32_t win_height = 900;
+	const uint32_t win_width = 1920;
+	const uint32_t win_height = 1080;
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 4;
-	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "AutoDrone", sf::Style::Default, settings);
+	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "AutoDrone", sf::Style::Fullscreen, settings);
 	window.setVerticalSyncEnabled(true);
 
 	bool slow_motion = false;
-	const float base_dt = 0.008f;
+	const float base_dt = 0.007f;
 	float dt = base_dt;
 
 	sfev::EventManager event_manager(window);
 	event_manager.addEventCallback(sf::Event::Closed, [&](sfev::CstEv ev) { window.close(); });
 	event_manager.addKeyPressedCallback(sf::Keyboard::Escape, [&](sfev::CstEv ev) { window.close(); });
-
-	const uint32_t pop_size = 800;
-	Stadium stadium(pop_size, sf::Vector2f(win_width, win_height));
 
 	std::vector<sf::Color> colors({ sf::Color(36, 123, 160),
 									sf::Color(161, 88, 86),

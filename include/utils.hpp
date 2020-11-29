@@ -57,6 +57,9 @@ T as(const U& u)
 }
 
 
+float getFastRandUnder(float max);
+
+
 float getAngle(const sf::Vector2f& v);
 
 

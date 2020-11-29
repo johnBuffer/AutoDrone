@@ -71,6 +71,13 @@ float normalize(float value, float range)
 	return value / range;
 }
 
+float getFastRandUnder(float max)
+{
+	constexpr int32_t m = 10000;
+	constexpr float im = 1.0f / float(m);
+	return max * (rand()%m * im);
+}
+
 float getAngle(const sf::Vector2f & v)
 {
 	const float a = acos(v.x / getLength(v));
@@ -89,7 +96,7 @@ float sign(const float f)
 
 float sigm(const float f)
 {
-	return f / (1 + std::abs(f));
+	return 1.0f / (1.0f + exp(-f));
 }
 
 sf::RectangleShape getLine(const sf::Vector2f& point_1, const sf::Vector2f& point_2, const float width, const sf::Color& color)
