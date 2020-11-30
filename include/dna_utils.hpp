@@ -25,7 +25,7 @@ struct DNAUtils
 		const uint64_t point1 = getIntUnderNonReset(as<uint32_t>(dna1.getBytesCount()));
 		DNA child_dna = crossover(dna1, dna2, point1);
 		const uint64_t element_count = dna1.getElementsCount<T>();
-		for (uint64_t i(element_count - 1); i--;) {
+		for (uint64_t i(element_count); i--;) {
 			const float distrib = 1.0f + NumberGenerator<>::getInstance().get(mutation_probability);
 			child_dna.set(i, child_dna.get<float>(i) * distrib);
 		}
@@ -45,7 +45,7 @@ struct DNAUtils
 	static void optimize(DNA& dna, float probability, float range)
 	{
 		const uint64_t element_count = dna.getElementsCount<T>();
-		for (uint64_t i(element_count - 1); i--;) {
+		for (uint64_t i(element_count); i--;) {
 			if (pass(probability)) {
 				const T value = dna.get<T>(i);
 				const T random_offset = NumberGenerator<>::getInstance().get(range * MAX_RANGE);
