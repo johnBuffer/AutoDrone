@@ -15,7 +15,7 @@ struct DnaLoader
 	{
 		std::ifstream infile(filename, std::ios::binary);
 
-		std::cout << "Number of bytes in file: " << filesize(filename.c_str()) << std::endl;
+		std::cout << "Number of DNAs in file: " << filesize(filename.c_str()) / bytes_count << std::endl;
 
 		DNA dna(bytes_count * 8);
 		if (!infile) {
@@ -33,6 +33,8 @@ struct DnaLoader
 		if (!infile.read((char*)dna.code.data(), bytes_count)) {
 			std::cout << "Error while reading file." << std::endl;
 		}
+
+		std::cout << "First value: " << dna.get<float>(0) << std::endl;
 
 		return dna;
 	}
