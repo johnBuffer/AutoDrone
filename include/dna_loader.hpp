@@ -21,12 +21,6 @@ struct DnaLoader
 		else {
 			infile.seekg(offset * bytes_count, std::ios::end);
 		}
-
-		std::vector<uint8_t> right_order = dna.code;
-		for (uint64_t i(0); i < right_order.size(); ++i) {
-			right_order[i] = dna.code[right_order.size() - 1 - i];
-		}
-		dna.code = right_order;
 		
 		if (!infile.read((char*)dna.code.data(), bytes_count)) {
 			std::cout << "Error while reading file." << std::endl;
@@ -38,11 +32,8 @@ struct DnaLoader
 	static void writeDnaToFile(const std::string& filename, const DNA& dna)
 	{
 		std::ofstream outfile(filename, std::ios::ate);
-		const uint64_t element_count = dna.getElementsCount<float>();
-		for (uint64_t i(0); i<element_count; ++i) {
-			float value = dna.get<float>(i);
-			outfile.write((char*)&value, sizeof(float));
-		}
+		const uint64_t element_count = dna.code.size();
+		outfile.write((char*)dna.code.data(), element_count);
 		outfile.close();
 	}
 };
