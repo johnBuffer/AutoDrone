@@ -7,6 +7,7 @@
 #include "double_buffer.hpp"
 #include <fstream>
 #include <sstream>
+#include "dna_loader.hpp"
 
 
 const float population_elite_ratio = 0.05f;
@@ -37,18 +38,9 @@ struct Selector
 			ifs.open(filename);
 		}
 		ifs.close();
+		out_file = filename;
 
 		std::cout << "Writing dumps in " << filename << std::endl;
-
-		out_file = std::ofstream(filename);
-		if (out_file.fail()) {
-			std::cout << "Cannot create '" << filename << "'" << std::endl;
-		}
-	}
-
-	~Selector()
-	{
-		out_file.close();
 	}
 
 	void nextGeneration()
@@ -67,12 +59,7 @@ struct Selector
 		// Replace the weakest
 		std::cout << "Gen: " << current_iteration << " Best: " << current_units[0].fitness << std::endl;
 		if (current_iteration%dump_frequency == 0) {
-			const uint64_t element_count = current_units[0].dna.getElementsCount<float>();
-			for (uint64_t i(element_count - 1); i--;) {
-				float value = current_units[0].dna.get<float>(i);
-				out_file.write((char*)&value, sizeof(float));
-			}
-			out_file << std::endl;
+			DnaLoader::writeDnaToFile(out_file, getCurrentPopulation()[0].dna);
 		}
 
 		for (uint32_t i(elites_count); i < population_size; ++i) {
@@ -133,7 +120,7 @@ struct Selector
 	const uint32_t elites_count;
 	DoubleObject<std::vector<T>> population;
 	SelectionWheel wheel;
-	std::ofstream out_file;
+	std::string out_file;
 	uint32_t dump_frequency = 100;
 
 	uint32_t current_iteration;
