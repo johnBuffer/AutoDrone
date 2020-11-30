@@ -48,7 +48,7 @@ int main()
 	sf::Vector2f mouse_target;
 	const float target_radius = 8.0f;
 
-	const uint32_t pop_size = 800;
+	const uint32_t pop_size = 80;
 	Stadium stadium(pop_size, sf::Vector2f(win_width, win_height));
 
 	bool show_just_one = false;

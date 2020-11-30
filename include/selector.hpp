@@ -53,7 +53,7 @@ struct Selector
 		wheel.addFitnessScores(current_units);
 		// Replace the weakest
 		std::cout << "Gen: " << current_iteration << " Best: " << current_units[0].fitness << std::endl;
-		if (current_iteration%dump_frequency == 0) {
+		if ((current_iteration%dump_frequency) == 0) {
 			DnaLoader::writeDnaToFile(out_file, getCurrentPopulation()[0].dna);
 		}
 

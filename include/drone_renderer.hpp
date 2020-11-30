@@ -124,7 +124,7 @@ struct DroneRenderer
 				smoke_sprite.setPosition(s.position);
 				smoke_sprite.setRotation(RAD_TO_DEG * s.angle);
 				smoke_sprite.setScale(smoke_scale, smoke_scale);
-				const uint8_t smoke_color = std::min(0.25f * s.speed, 255.0f);
+				const uint8_t smoke_color = 255 * std::min(1.0f, 5.0f / s.scale);
 				smoke_sprite.setColor(sf::Color(smoke_color, smoke_color, smoke_color, 0.025f * s.speed * (1.0f - s.getRatio())));
 				target.draw(smoke_sprite, state);
 			}
