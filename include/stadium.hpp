@@ -1,7 +1,5 @@
 #pragma once
 
-#include <swarm.hpp>
-
 #include "selector.hpp"
 #include "drone.hpp"
 
@@ -35,7 +33,6 @@ struct Stadium
 	std::vector<TargetState> drones_state;
 	sf::Vector2f area_size;
 	Iteration current_iteration;
-	swrm::Swarm swarm;
 
 	Stadium(uint32_t population, sf::Vector2f size)
 		: population_size(population)
@@ -44,7 +41,6 @@ struct Stadium
 		, targets(targets_count)
 		, drones_state(population)
 		, area_size(size)
-		, swarm(4)
 	{
 		
 	}
@@ -151,15 +147,11 @@ struct Stadium
 
 	void update(float dt, bool update_smoke)
 	{
-		const uint32_t population_size = selector.getCurrentPopulation().size();
-		auto group_update = swarm.execute([&](uint32_t thread_id, uint32_t max_thread) {
-				const uint64_t thread_width = population_size / max_thread;
-				for (uint32_t i(thread_id * thread_width); i < (thread_id + 1) * thread_width; ++i) {
-					updateDrone(i, dt, update_smoke);
-				}
-			});
-		group_update.waitExecutionDone();
-		current_iteration.time += dt;
+		uint64_t i(0);
+		for (Drone& d : selector.getCurrentPopulation()) {
+			updateDrone(i, dt, update_smoke);
+			++i;
+		}
 	}
 
 	void initializeIteration()

@@ -12,12 +12,12 @@ struct DNA
 {
 	using byte = uint8_t;
 
-	DNA(const uint64_t bits_count)
+	DNA(uint64_t bits_count)
 		: code(bits_count / 8u + bool(bits_count % 8 && bits_count > 8))
 	{}
 
 	template<typename T>
-	void initialize(const float range)
+	void initialize(const T range)
 	{
 		const uint64_t element_count = getElementsCount<T>();
 		for (uint64_t i(element_count - 1); i--;) {
@@ -27,7 +27,7 @@ struct DNA
 	}
 
 	template<typename T>
-	T get(const uint64_t offset) const
+	T get(uint64_t offset) const
 	{
 		T result;
 		const uint64_t dna_offset = offset * sizeof(T);
@@ -36,7 +36,7 @@ struct DNA
 	}
 
 	template<typename T>
-	void set(const uint64_t offset, const T& value)
+	void set(uint64_t offset, const T& value)
 	{
 		const float checked_value = clamp(-MAX_RANGE, MAX_RANGE, value);
 		const uint64_t dna_offset = offset * sizeof(T);
@@ -62,7 +62,7 @@ struct DNA
 		std::cout << std::endl;
 	}
 
-	void mutateBits(const float probability)
+	void mutateBits(float probability)
 	{
 		for (byte& b : code) {
 			for (uint64_t i(0); i < 8; ++i) {
@@ -75,7 +75,7 @@ struct DNA
 	}
 
 	template<typename T>
-	void mutate(const float probability)
+	void mutate(T probability)
 	{
 		constexpr uint32_t type_size = sizeof(T);
 		const uint64_t element_count = code.size() / type_size;

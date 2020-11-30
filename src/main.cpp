@@ -13,17 +13,18 @@
 #include "drone.hpp"
 #include "drone_renderer.hpp"
 #include "stadium.hpp"
+#include "dna_loader.hpp"
 
 
 int main()
 {
 	NumberGenerator<>::initialize();
 
-	const uint32_t win_width = 1920;
-	const uint32_t win_height = 1080;
+	const uint32_t win_width = 1600;
+	const uint32_t win_height = 800;
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 4;
-	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "AutoDrone", sf::Style::Fullscreen, settings);
+	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "AutoDrone", sf::Style::Default, settings);
 	window.setVerticalSyncEnabled(true);
 
 	bool slow_motion = false;
@@ -48,7 +49,7 @@ int main()
 	sf::Vector2f mouse_target;
 	const float target_radius = 8.0f;
 
-	const uint32_t pop_size = 800;
+	const uint32_t pop_size = 1;
 	Stadium stadium(pop_size, sf::Vector2f(win_width, win_height));
 
 	bool show_just_one = false;
@@ -57,6 +58,7 @@ int main()
 	bool draw_neural = true;
 	bool draw_drones = true;
 	bool draw_fitness = true;
+
 	event_manager.addKeyPressedCallback(sf::Keyboard::E, [&](sfev::CstEv ev) { full_speed = !full_speed; window.setVerticalSyncEnabled(!full_speed); });
 	event_manager.addKeyPressedCallback(sf::Keyboard::M, [&](sfev::CstEv ev) { manual_control = !manual_control; });
 	event_manager.addKeyPressedCallback(sf::Keyboard::S, [&](sfev::CstEv ev) { show_just_one = !show_just_one; });
@@ -87,6 +89,8 @@ int main()
 
 	DroneRenderer drone_renderer;
 	sf::RenderStates state;
+
+	//DNA dna = DnaLoader::loadDnaFrom("../replay.bin", Network::getParametersCount(architecture) * 32, 10, true);
 
 	sf::Clock clock;
 	while (window.isOpen()) {
@@ -131,13 +135,11 @@ int main()
 				}
 			}
 			
-			if (show_just_one) {
-				sf::CircleShape target_c(target_radius);
-				target_c.setFillColor(sf::Color(255, 128, 0));
-				target_c.setOrigin(target_radius, target_radius);
-				target_c.setPosition(stadium.targets[stadium.drones_state[current_drone_i].id]);
-				window.draw(target_c);
-			}
+			sf::CircleShape target_c(target_radius);
+			target_c.setFillColor(sf::Color(255, 128, 0));
+			target_c.setOrigin(target_radius, target_radius);
+			target_c.setPosition(stadium.targets[stadium.drones_state[current_drone_i].id]);
+			window.draw(target_c);
 
 			// Print Network
 			if (!full_speed && draw_neural) {
@@ -152,15 +154,11 @@ int main()
 			if (draw_fitness) {
 				fitness_graph.render(window);
 			}
-			//drone_renderer.draw(drone, window, colors[0]);
 
 			window.display();
 		}
 		
-		//std::cout << "Iteration time: " << clock.getElapsedTime().asMilliseconds() << "ms" << std::endl;
-
 		fitness_graph.next();
-		stadium.nextIteration();
 	}
 
 	return 0;
