@@ -90,7 +90,7 @@ int main()
 	DroneRenderer drone_renderer;
 	sf::RenderStates state;
 
-	//DNA dna = DnaLoader::loadDnaFrom("../replay.bin", Network::getParametersCount(architecture) * 32, 10, true);
+	DNA dna = DnaLoader::loadDnaFrom("../replay.bin", Network::getParametersCount(architecture) * 4, 1);
 
 	sf::Clock clock;
 	while (window.isOpen()) {
@@ -99,6 +99,7 @@ int main()
 		// Initialize drones
 		std::vector<Drone>& population = stadium.selector.getCurrentPopulation();
 		stadium.initializeIteration();
+		stadium.selector.getCurrentPopulation()[0].loadDNA(dna);
 
 		clock.restart();
 
