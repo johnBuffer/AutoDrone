@@ -13,7 +13,7 @@ struct DnaLoader
 
 	static DNA loadDnaFrom(const std::string& filename, uint64_t bytes_count, uint64_t offset, bool from_end = false)
 	{
-		std::ifstream infile(filename, std::ios::binary);
+		std::ifstream infile(filename, std::ios_base::binary);
 
 		std::cout << "Number of DNAs in file: " << filesize(filename.c_str()) / bytes_count << std::endl;
 
@@ -24,10 +24,10 @@ struct DnaLoader
 		}
 
 		if (!from_end) {
-			infile.seekg(offset * bytes_count, std::ios::beg);
+			infile.seekg(offset * bytes_count, std::ios_base::beg);
 		}
 		else {
-			infile.seekg(offset * bytes_count, std::ios::end);
+			infile.seekg(offset * bytes_count, std::ios_base::end);
 		}
 		
 		if (!infile.read((char*)dna.code.data(), bytes_count)) {
@@ -44,7 +44,7 @@ struct DnaLoader
 
 	static void writeDnaToFile(const std::string& filename, const DNA& dna)
 	{
-		std::ofstream outfile(filename, std::ios::ate);
+		std::ofstream outfile(filename, std::ios_base::app);
 		const uint64_t element_count = dna.getElementsCount<float>();
 		for (uint64_t i(0); i<element_count; ++i) {
 			float value = dna.get<float>(i);

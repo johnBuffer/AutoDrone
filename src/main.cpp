@@ -90,8 +90,7 @@ int main()
 	DroneRenderer drone_renderer;
 	sf::RenderStates state;
 
-	std::cout << "Parameters count bytes: " << Network::getParametersCount(architecture) * 4 << std::endl;
-	DNA dna = DnaLoader::loadDnaFrom("../selector_output_1.bin", Network::getParametersCount(architecture) * 4, 0);
+	DNA dna = DnaLoader::loadDnaFrom("../selector_output_2.bin", Network::getParametersCount(architecture) * 4, 1);
 
 	sf::Clock clock;
 	while (window.isOpen()) {
