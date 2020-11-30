@@ -91,7 +91,7 @@ int main()
 	sf::RenderStates state;
 
 	std::cout << "Parameters count bytes: " << Network::getParametersCount(architecture) * 4 << std::endl;
-	DNA dna = DnaLoader::loadDnaFrom("../selector_output_3.bin", Network::getParametersCount(architecture) * 4, 3);
+	DNA dna = DnaLoader::loadDnaFrom("../selector_output_1.bin", Network::getParametersCount(architecture) * 4, 0);
 
 	sf::Clock clock;
 	while (window.isOpen()) {
