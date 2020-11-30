@@ -40,12 +40,6 @@ struct DnaLoader
 			std::cout << "Error while reading file." << std::endl;
 		}
 
-		const uint64_t element_count = dna.getElementsCount<float>();
-		std::cout << element_count << " floats in DNA" << std::endl;
-		for (uint64_t i(0); i<element_count; ++i) {
-			std::cout << i << " " << dna.get<float>(i) << "    " << test_vec[i]  << std::endl;
-		}
-
 		return dna;
 	}
 

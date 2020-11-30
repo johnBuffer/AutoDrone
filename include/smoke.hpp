@@ -20,7 +20,7 @@ struct Smoke
 		, diretion(dir)
 		, speed(speed_)
 		, angle(getFastRandUnder(2.0f * PI))
-		, scale(0.25f + scale_ * (1.0f + getFastRandUnder(0.5f)))
+		, scale(0.25f + scale_ * (0.25f + getFastRandUnder(1.0f)))
 		, max_lifetime(duration)
 		, lifetime(0.0f)
 		, angle_var(1.0f * (getFastRandUnder(2.0f) - 1.0f))
@@ -43,7 +43,7 @@ struct Smoke
 		const float inv_ratio = (1.0f - ratio);
 		lifetime += dt;
 		angle += angle_var * inv_ratio * dt;
-		scale *= 1.0f + 1.25f * dt;
+		scale *= 1.0f + 4.0f * dt;
 		position += (speed * diretion * dt) / scale;
 	}
 };

@@ -33,6 +33,8 @@ struct Stadium
 	std::vector<TargetState> drones_state;
 	sf::Vector2f area_size;
 	Iteration current_iteration;
+	bool use_manual_target;
+	sf::Vector2f manual_target;
 
 	Stadium(uint32_t population, sf::Vector2f size)
 		: population_size(population)
@@ -41,6 +43,7 @@ struct Stadium
 		, targets(targets_count)
 		, drones_state(population)
 		, area_size(size)
+		, use_manual_target(false)
 	{
 		
 	}
@@ -98,7 +101,8 @@ struct Stadium
 		const float target_radius = 8.0f;
 		Drone& d = selector.getCurrentPopulation()[i];
 		if (d.alive) {
-			const sf::Vector2f to_target = targets[drones_state[i].id] - d.position;
+			const sf::Vector2f current_target = use_manual_target ? manual_target : targets[drones_state[i].id];
+			const sf::Vector2f to_target = current_target - d.position;
 
 			std::vector<float> inputs = {
 				normalize(to_target.x, area_size.x),
@@ -114,25 +118,17 @@ struct Stadium
 			d.update(dt, update_smoke);
 			
 			// We don't want weirdos
-			const float score_factor = std::pow(cos(d.angle), 2.0f);
 			const float to_target_dist = getLength(to_target);
-			const float fitness_denom = std::max(1.0f, to_target_dist);
-			d.fitness += score_factor / fitness_denom;
-			if (d.fitness > current_iteration.best_fitness) {
-				current_iteration.best_fitness = d.fitness;
-			}
 
-			d.alive = checkAlive(d, 0.25f);
+			d.alive = checkAlive(d, 0.125f);
 
 			TargetState& state = drones_state[i];
 
 			// Next target if needed
-			const float target_reward_coef = score_factor * 10.0f;
 			const float target_time = 3.0f;
-			if (to_target_dist < target_radius + d.radius) {
+			if (to_target_dist < target_radius + d.radius && !use_manual_target) {
 				state.time_in += dt;
 				if (state.time_in > target_time) {
-					d.fitness += target_reward_coef * state.points / (1.0f + state.time_out + 100.0f * std::abs(d.angle));
 					state.time_out = 0.0f;
 					state.id = (state.id + 1) % targets_count;
 					state.points = getLength(d.position - targets[state.id]);

@@ -49,18 +49,13 @@ int main()
 	sf::Vector2f mouse_target;
 	const float target_radius = 8.0f;
 
-	const uint32_t pop_size = 1;
-	Stadium stadium(pop_size, sf::Vector2f(win_width, win_height));
-
 	bool show_just_one = false;
 	bool full_speed = false;
-	bool manual_control = false;
 	bool draw_neural = true;
 	bool draw_drones = true;
 	bool draw_fitness = true;
 
 	event_manager.addKeyPressedCallback(sf::Keyboard::E, [&](sfev::CstEv ev) { full_speed = !full_speed; window.setVerticalSyncEnabled(!full_speed); });
-	event_manager.addKeyPressedCallback(sf::Keyboard::M, [&](sfev::CstEv ev) { manual_control = !manual_control; });
 	event_manager.addKeyPressedCallback(sf::Keyboard::S, [&](sfev::CstEv ev) { show_just_one = !show_just_one; });
 	event_manager.addKeyPressedCallback(sf::Keyboard::N, [&](sfev::CstEv ev) { draw_neural = !draw_neural; });
 	event_manager.addKeyPressedCallback(sf::Keyboard::D, [&](sfev::CstEv ev) { draw_drones = !draw_drones; });
@@ -69,19 +64,6 @@ int main()
 	const float GUI_MARGIN = 10.0f;
 	Graphic fitness_graph(1000, sf::Vector2f(700, 120), sf::Vector2f(GUI_MARGIN, win_height - 120 - GUI_MARGIN));
 	fitness_graph.color = sf::Color(96, 211, 148);
-
-	sf::Font font;
-	font.loadFromFile("../font.ttf");
-	sf::Text generation_text;
-	sf::Text best_score_text;
-	generation_text.setFont(font);
-	generation_text.setCharacterSize(42);
-	generation_text.setFillColor(sf::Color::White);
-	generation_text.setPosition(GUI_MARGIN * 2.0f, GUI_MARGIN);
-
-	best_score_text = generation_text;
-	best_score_text.setCharacterSize(32);
-	best_score_text.setPosition(4.0f * GUI_MARGIN, 64);
 	
 	NeuralRenderer network_printer;
 	const sf::Vector2f network_size = network_printer.getSize(4, 9);
@@ -90,7 +72,9 @@ int main()
 	DroneRenderer drone_renderer;
 	sf::RenderStates state;
 
-	DNA dna = DnaLoader::loadDnaFrom("../selector_output_2.bin", Network::getParametersCount(architecture) * 4, 16);
+	const uint32_t pop_size = 25;
+	Stadium stadium(pop_size, sf::Vector2f(win_width, win_height));
+	event_manager.addKeyPressedCallback(sf::Keyboard::M, [&](sfev::CstEv) { stadium.use_manual_target = !stadium.use_manual_target; });
 
 	sf::Clock clock;
 	while (window.isOpen()) {
@@ -99,35 +83,40 @@ int main()
 		// Initialize drones
 		std::vector<Drone>& population = stadium.selector.getCurrentPopulation();
 		stadium.initializeIteration();
-		stadium.selector.getCurrentPopulation()[0].loadDNA(dna);
+
+		for (uint32_t i(0); i < pop_size; ++i) {
+			DNA dna = DnaLoader::loadDnaFrom("../selector_output_2.bin", Network::getParametersCount(architecture) * 4, i);
+			stadium.selector.getCurrentPopulation()[i].loadDNA(dna);
+			stadium.selector.getCurrentPopulation()[i].generation = 100 * i + 1;
+		}
+		
+		if (stadium.use_manual_target) {
+			const sf::Vector2i mouse_pos = sf::Mouse::getPosition(window);
+			stadium.manual_target.x = mouse_pos.x;
+			stadium.manual_target.y = mouse_pos.y;
+		}
 
 		clock.restart();
 
 		while (stadium.getAliveCount() && window.isOpen() && stadium.current_iteration.time < 100.0f) {
 			event_manager.processEvents();
 
-			if (manual_control) {
-				const sf::Vector2i mouse_position = sf::Mouse::getPosition(window);
-				mouse_target.x = mouse_position.x;
-				mouse_target.y = mouse_position.y;
+			if (stadium.use_manual_target) {
+				const sf::Vector2i mouse_pos = sf::Mouse::getPosition(window);
+				stadium.manual_target.x = mouse_pos.x;
+				stadium.manual_target.y = mouse_pos.y;
 			}
 
 			stadium.update(dt, !full_speed);
 
-			fitness_graph.setLastValue(stadium.current_iteration.best_fitness);
-			generation_text.setString("Generation " + toString(stadium.selector.current_iteration));
-			best_score_text.setString("Score " + toString(stadium.current_iteration.best_fitness));
 			// Render
 			window.clear(/*sf::Color(191, 219, 247)*/);
-
-			window.draw(generation_text);
-			window.draw(best_score_text);
 
 			uint32_t current_drone_i = 0;
 			if (draw_drones) {
 				for (Drone& d : population) {
 					if (d.alive) {
-						drone_renderer.draw(d, window, state, colors[current_drone_i%colors.size()], !full_speed && show_just_one);
+						drone_renderer.draw(d, window, state, colors[current_drone_i%colors.size()], !full_speed);
 						if (show_just_one) {
 							break;
 						}
@@ -139,7 +128,7 @@ int main()
 			sf::CircleShape target_c(target_radius);
 			target_c.setFillColor(sf::Color(255, 128, 0));
 			target_c.setOrigin(target_radius, target_radius);
-			target_c.setPosition(stadium.targets[stadium.drones_state[current_drone_i].id]);
+			target_c.setPosition(stadium.use_manual_target ? stadium.manual_target : stadium.targets[stadium.drones_state[current_drone_i].id]);
 			window.draw(target_c);
 
 			// Print Network
