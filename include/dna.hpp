@@ -20,7 +20,7 @@ struct DNA
 	void initialize(const float range)
 	{
 		const uint64_t element_count = getElementsCount<T>();
-		for (uint64_t i(element_count - 1); i--;) {
+		for (uint64_t i(element_count); i--;) {
 			const T value = NumberGenerator<>::getInstance().get(range);
 			set(i, value);
 		}

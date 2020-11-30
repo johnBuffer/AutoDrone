@@ -35,10 +35,5 @@ struct DnaLoader
 		const uint64_t element_count = dna.code.size();
 		outfile.write((char*)dna.code.data(), element_count);
 		outfile.close();
-		
-		const uint64_t float_count = dna.getElementsCount<float>();
-		for (uint64_t i(0); i < float_count; ++i) {
-			std::cout << dna.get<float>(i) << std::endl;
-		}
 	}
 };
