@@ -51,17 +51,17 @@ struct Selector
 		std::vector<T>& current_units = population.getCurrent();
 		std::vector<T>& next_units    = population.getLast();
 		wheel.addFitnessScores(current_units);
-		// The top best survive;
-		uint32_t evolve_count = 0;
-		for (uint32_t i(0); i < elites_count; ++i) {
-			next_units[i] = current_units[i];
-		}
 		// Replace the weakest
 		std::cout << "Gen: " << current_iteration << " Best: " << current_units[0].fitness << std::endl;
 		if (current_iteration%dump_frequency == 0) {
 			DnaLoader::writeDnaToFile(out_file, getCurrentPopulation()[0].dna);
 		}
 
+		// The top best survive;
+		uint32_t evolve_count = 0;
+		for (uint32_t i(0); i < elites_count; ++i) {
+			next_units[i] = current_units[i];
+		}
 		for (uint32_t i(elites_count); i < population_size; ++i) {
 			const T& unit_1 = wheel.pick(current_units);
 			const T& unit_2 = wheel.pick(current_units);

@@ -37,7 +37,7 @@ struct DnaLoader
 		outfile.close();
 		
 		const uint64_t float_count = dna.getElementsCount<float>();
-		for (uint64_t i(0); i< float_count; ++i) {
+		for (uint64_t i(0); i < float_count; ++i) {
 			std::cout << dna.get<float>(i) << std::endl;
 		}
 	}
