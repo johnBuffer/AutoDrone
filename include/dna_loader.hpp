@@ -30,13 +30,20 @@ struct DnaLoader
 			infile.seekg(offset * bytes_count, std::ios_base::end);
 		}
 		
+		std::vector<float> test_vec(202);
+		if (!infile.read((char*)test_vec.data(), bytes_count)) {
+			std::cout << "Error while reading file." << std::endl;
+		}
+
+		infile.seekg(offset * bytes_count, std::ios_base::beg);
 		if (!infile.read((char*)dna.code.data(), bytes_count)) {
 			std::cout << "Error while reading file." << std::endl;
 		}
 
 		const uint64_t element_count = dna.getElementsCount<float>();
+		std::cout << element_count << " floats in DNA" << std::endl;
 		for (uint64_t i(0); i<element_count; ++i) {
-			std::cout << dna.get<float>(i) << std::endl;
+			std::cout << i << " " << dna.get<float>(i) << "    " << test_vec[i]  << std::endl;
 		}
 
 		return dna;
