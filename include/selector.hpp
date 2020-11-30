@@ -121,7 +121,7 @@ struct Selector
 	DoubleObject<std::vector<T>> population;
 	SelectionWheel wheel;
 	std::string out_file;
-	uint32_t dump_frequency = 10;
+	uint32_t dump_frequency = 100;
 
 	uint32_t current_iteration;
 };
