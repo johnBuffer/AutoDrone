@@ -90,7 +90,7 @@ int main()
 	DroneRenderer drone_renderer;
 	sf::RenderStates state;
 
-	DNA dna = DnaLoader::loadDnaFrom("../selector_output_2.bin", Network::getParametersCount(architecture) * 4, 0);
+	DNA dna = DnaLoader::loadDnaFrom("../selector_output_2.bin", Network::getParametersCount(architecture) * 4, 16);
 
 	sf::Clock clock;
 	while (window.isOpen()) {
