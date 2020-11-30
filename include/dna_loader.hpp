@@ -31,7 +31,7 @@ struct DnaLoader
 
 	static void writeDnaToFile(const std::string& filename, const DNA& dna)
 	{
-		std::ofstream outfile(filename, std::ios_base::app);
+		std::ofstream outfile(filename, std::istream::out | std::ios::binary);
 		const uint64_t element_count = dna.code.size();
 		outfile.write((char*)dna.code.data(), element_count);
 		outfile.close();
