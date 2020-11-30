@@ -5,9 +5,17 @@
 
 struct DnaLoader
 {
+	static std::ifstream::pos_type filesize(const char* filename)
+	{
+		std::ifstream in(filename, std::ifstream::ate | std::ifstream::binary);
+		return in.tellg();
+	}
+
 	static DNA loadDnaFrom(const std::string& filename, uint64_t bytes_count, uint64_t offset, bool from_end = false)
 	{
 		std::ifstream infile(filename, std::ios::binary);
+
+		std::cout << "Number of bytes in file: " << filesize(filename.c_str()) << std::endl;
 
 		DNA dna(bytes_count * 8);
 		if (!infile) {
@@ -21,12 +29,6 @@ struct DnaLoader
 		else {
 			infile.seekg(offset * bytes_count, std::ios::end);
 		}
-
-		std::vector<uint8_t> right_order = dna.code;
-		for (uint64_t i(0); i < right_order.size(); ++i) {
-			right_order[i] = dna.code[right_order.size() - 1 - i];
-		}
-		dna.code = right_order;
 		
 		if (!infile.read((char*)dna.code.data(), bytes_count)) {
 			std::cout << "Error while reading file." << std::endl;
