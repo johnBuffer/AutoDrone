@@ -8,7 +8,7 @@
 
 
 
-const std::vector<uint64_t> architecture = { 7, 9, 4 };
+const std::vector<uint64_t> architecture = { 7, 9, 9, 4 };
 
 
 struct Drone : public AiUnit
@@ -43,9 +43,9 @@ struct Drone : public AiUnit
 		Thruster()
 			: angle(0.0f)
 			, target_angle(0.0f)
-			, angle_var_speed(5.0f)
+			, angle_var_speed(2.0f)
 			, max_angle(0.5f * PI)
-			, max_power(800.0f)
+			, max_power(1500.0f)
 
 		{}
 
@@ -185,9 +185,9 @@ struct Drone : public AiUnit
 
 	void process(const std::vector<float>& outputs) override
 	{
-		left.setPower(outputs[0]);
-		left.setAngle(2.0f * (outputs[1] - 0.5f));
-		right.setPower(outputs[2]);
-		right.setAngle(2.0f * (outputs[3] - 0.5f));
+		left.setPower(0.5f * (outputs[0] + 1.0f));
+		left.setAngle(2.0f * outputs[1]);
+		right.setPower(0.5f * (outputs[2] + 1.0f));
+		right.setAngle(2.0f * outputs[3]);
 	}
 };

@@ -113,12 +113,12 @@ struct Stadium
 				sin(d.angle),
 				d.angular_velocity * dt
 			};
+
 			d.execute(inputs);
 			d.update(dt, update_smoke);
 			
 			// We don't want weirdos
 			const float score_factor = std::pow(cos(d.angle), 2.0f);
-
 			const float to_target_dist = getLength(to_target);
 			const float fitness_denom = std::max(1.0f, to_target_dist);
 			d.fitness += score_factor / fitness_denom;

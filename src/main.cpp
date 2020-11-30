@@ -65,8 +65,21 @@ int main()
 	event_manager.addKeyPressedCallback(sf::Keyboard::F, [&](sfev::CstEv ev) { draw_fitness = !draw_fitness; });
 
 	const float GUI_MARGIN = 10.0f;
-	Graphic fitness_graph(3000, sf::Vector2f(win_width - 2.0f * GUI_MARGIN, 100), sf::Vector2f(GUI_MARGIN, win_height - 100 - GUI_MARGIN));
+	Graphic fitness_graph(1000, sf::Vector2f(700, 120), sf::Vector2f(GUI_MARGIN, win_height - 120 - GUI_MARGIN));
 	fitness_graph.color = sf::Color(96, 211, 148);
+
+	sf::Font font;
+	font.loadFromFile("../font.ttf");
+	sf::Text generation_text;
+	sf::Text best_score_text;
+	generation_text.setFont(font);
+	generation_text.setCharacterSize(42);
+	generation_text.setFillColor(sf::Color::White);
+	generation_text.setPosition(GUI_MARGIN * 2.0f, GUI_MARGIN);
+
+	best_score_text = generation_text;
+	best_score_text.setCharacterSize(32);
+	best_score_text.setPosition(4.0f * GUI_MARGIN, 64);
 	
 	NeuralRenderer network_printer;
 	const sf::Vector2f network_size = network_printer.getSize(4, 9);
@@ -97,14 +110,19 @@ int main()
 			stadium.update(dt, !full_speed);
 
 			fitness_graph.setLastValue(stadium.current_iteration.best_fitness);
-
+			generation_text.setString("Generation " + toString(stadium.selector.current_iteration));
+			best_score_text.setString("Score " + toString(stadium.current_iteration.best_fitness));
 			// Render
-			window.clear();
+			window.clear(/*sf::Color(191, 219, 247)*/);
+
+			window.draw(generation_text);
+			window.draw(best_score_text);
+
 			uint32_t current_drone_i = 0;
 			if (draw_drones) {
 				for (Drone& d : population) {
 					if (d.alive) {
-						drone_renderer.draw(d, window, state, colors[current_drone_i%colors.size()], !full_speed);
+						drone_renderer.draw(d, window, state, colors[current_drone_i%colors.size()], !full_speed && show_just_one);
 						if (show_just_one) {
 							break;
 						}

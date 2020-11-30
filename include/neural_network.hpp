@@ -38,7 +38,7 @@ struct Layer
 				result += weights[i][j] * inputs[j];
 			}
 			// Output result
-			values[i] = sigm(result);
+			values[i] = tanh(result);
 		}
 	}
 
