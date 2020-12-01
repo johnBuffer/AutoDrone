@@ -49,6 +49,11 @@ struct Stadium
 		
 	}
 
+	void loadDnaFromFile(const std::string& filename)
+	{
+
+	}
+
 	void initializeTargets()
 	{
 		// Initialize targets
