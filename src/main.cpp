@@ -76,6 +76,8 @@ int main()
 	Stadium stadium(pop_size, sf::Vector2f(win_width, win_height));
 	event_manager.addKeyPressedCallback(sf::Keyboard::M, [&](sfev::CstEv) { stadium.use_manual_target = !stadium.use_manual_target; });
 
+	std::cout << DnaLoader::getDnaCount("../selector_output_2.bin", Network::getParametersCount(architecture) * 4) << std::endl;
+
 	sf::Clock clock;
 	while (window.isOpen()) {
 		event_manager.processEvents();
@@ -85,9 +87,10 @@ int main()
 		stadium.initializeIteration();
 
 		for (uint32_t i(0); i < pop_size; ++i) {
-			DNA dna = DnaLoader::loadDnaFrom("../selector_output_2.bin", Network::getParametersCount(architecture) * 4, i);
+			const uint64_t gen = 20 + i;
+			DNA dna = DnaLoader::loadDnaFrom("../selector_output_2.bin", Network::getParametersCount(architecture) * 4, gen);
 			stadium.selector.getCurrentPopulation()[i].loadDNA(dna);
-			stadium.selector.getCurrentPopulation()[i].generation = 100 * i + 1;
+			stadium.selector.getCurrentPopulation()[i].generation = 100 * gen + 1;
 		}
 		
 		if (stadium.use_manual_target) {

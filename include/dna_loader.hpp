@@ -11,11 +11,14 @@ struct DnaLoader
 		return in.tellg();
 	}
 
+	static uint64_t getDnaCount(const std::string& filename, uint64_t bytes_count)
+	{
+		return filesize(filename.c_str()) / bytes_count;
+	}
+
 	static DNA loadDnaFrom(const std::string& filename, uint64_t bytes_count, uint64_t offset, bool from_end = false)
 	{
 		std::ifstream infile(filename, std::ios_base::binary);
-
-		std::cout << "Number of DNAs in file: " << filesize(filename.c_str()) / bytes_count << std::endl;
 
 		DNA dna(bytes_count * 8);
 		if (!infile) {
