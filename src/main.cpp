@@ -48,9 +48,6 @@ int main()
 	sf::Vector2f mouse_target;
 	const float target_radius = 8.0f;
 
-	const uint32_t pop_size = 1600;
-	Stadium stadium(pop_size, sf::Vector2f(win_width, win_height));
-
 	bool show_just_one = false;
 	bool full_speed = false;
 	bool manual_control = false;
@@ -84,6 +81,10 @@ int main()
 	NeuralRenderer network_printer;
 	const sf::Vector2f network_size = network_printer.getSize(4, 9);
 	network_printer.position = sf::Vector2f(win_width - network_size.x - GUI_MARGIN, win_height - network_size.y - GUI_MARGIN);
+
+	const uint32_t pop_size = 1600;
+	Stadium stadium(pop_size, sf::Vector2f(win_width, win_height));
+	stadium.loadDnaFromFile("../selector_output_2.bin");
 
 	DroneRenderer drone_renderer;
 	sf::RenderStates state;

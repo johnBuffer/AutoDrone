@@ -51,7 +51,11 @@ struct Stadium
 
 	void loadDnaFromFile(const std::string& filename)
 	{
-
+		const uint64_t bytes_count = Network::getParametersCount(architecture) * 4;
+		const uint64_t dna_count = DnaLoader::getDnaCount(filename, bytes_count);
+		for (uint64_t i(0); i < dna_count && i < population_size; ++i) {
+			selector.getCurrentPopulation()[i].loadDNA(DnaLoader::loadDnaFrom(filename, bytes_count, i));
+		}
 	}
 
 	void initializeTargets()
