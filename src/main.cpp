@@ -72,11 +72,11 @@ int main()
 	DroneRenderer drone_renderer;
 	sf::RenderStates state;
 
-	const uint32_t pop_size = 25;
+	const uint32_t pop_size = DnaLoader::getDnaCount("../selector_output_3.bin", Network::getParametersCount(architecture) * 4);
 	Stadium stadium(pop_size, sf::Vector2f(win_width, win_height));
 	event_manager.addKeyPressedCallback(sf::Keyboard::M, [&](sfev::CstEv) { stadium.use_manual_target = !stadium.use_manual_target; });
 
-	std::cout << DnaLoader::getDnaCount("../selector_output_2.bin", Network::getParametersCount(architecture) * 4) << std::endl;
+	std::cout << "Pop size " << pop_size << std::endl;
 
 	sf::Clock clock;
 	while (window.isOpen()) {
@@ -87,8 +87,8 @@ int main()
 		stadium.initializeIteration();
 
 		for (uint32_t i(0); i < pop_size; ++i) {
-			const uint64_t gen = 20 + i;
-			DNA dna = DnaLoader::loadDnaFrom("../selector_output_2.bin", Network::getParametersCount(architecture) * 4, gen);
+			const uint64_t gen = i;
+			DNA dna = DnaLoader::loadDnaFrom("../selector_output_3.bin", Network::getParametersCount(architecture) * 4, gen);
 			stadium.selector.getCurrentPopulation()[i].loadDNA(dna);
 			stadium.selector.getCurrentPopulation()[i].generation = 100 * gen + 1;
 		}

@@ -153,7 +153,7 @@ struct Drone : public AiUnit
 		if (update_smoke) {
 			const sf::Vector2f drone_dir(cos(angle), sin(angle));
 			const float smoke_vert_offset = 80.0f;
-			const float smoke_duration = 0.5f;
+			const float smoke_duration = 0.3f;
 			const float smoke_speed_coef = 0.8f;
 			if (left.power_ratio > 0.1f) {
 				const float left_angle = angle - left.angle + HalfPI;
