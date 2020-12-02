@@ -83,10 +83,11 @@ struct DroneRenderer
 		target.draw(push, state);
 
 		// Draw flame
+		const float power_ratio = thruster.getPowerMean();
 		const float rand_pulse_left = (1.0f + rand() % 10 * 0.05f);
-		const float v_scale_left = thruster.power_ratio * rand_pulse_left;
+		const float v_scale_left = power_ratio * rand_pulse_left;
 		flame_sprite.setPosition(position + 0.5f * thruster_height * sf::Vector2f(ca_left, sa_left));
-		flame_sprite.setScale(0.15f * thruster.power_ratio * rand_pulse_left, 0.15f * v_scale_left);
+		flame_sprite.setScale(0.15f * power_ratio * rand_pulse_left, 0.15f * v_scale_left);
 		flame_sprite.setRotation(RAD_TO_DEG * angle);
 		target.draw(flame_sprite, state);
 
@@ -104,7 +105,7 @@ struct DroneRenderer
 		power_indicator.setFillColor(sf::Color::Green);
 		power_indicator.setOrigin(width * 0.5f, height);
 		power_indicator.setRotation(angle * RAD_TO_DEG);
-		const uint8_t power_percent = thruster.power_ratio * 10;
+		const uint8_t power_percent = power_ratio * 10;
 		sf::Vector2f power_start(position + (0.5f * thruster_height - margin) * thruster_dir);
 		for (uint8_t i(0); i < power_percent; ++i) {
 			power_indicator.setPosition(power_start - float(i) * (height + margin) * thruster_dir);

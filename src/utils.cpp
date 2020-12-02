@@ -71,6 +71,20 @@ float normalize(float value, float range)
 	return value / range;
 }
 
+std::string format(const std::string & s, uint32_t width, char fill)
+{
+	const int32_t diff = width - s.size();
+	if (diff < 0) {
+		return s;
+	}
+
+	std::string res = s;
+	for (uint32_t i(diff); i--;) {
+		res += fill;
+	}
+	return res;
+}
+
 float getFastRandUnder(float max)
 {
 	constexpr int32_t m = 10000;

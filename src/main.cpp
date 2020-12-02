@@ -88,14 +88,16 @@ int main()
 	uint32_t current_drone = 0;
 
 	sf::Font font;
-	font.loadFromFile("../font.ttf");
+	font.loadFromFile("../inconsolata.ttf");
 	sf::Text text;
 	text.setFont(font);
-	text.setCharacterSize(18);
+	text.setCharacterSize(24);
 	text.setFillColor(sf::Color::White);
 	text.setPosition(2.0f * GUI_MARGIN, GUI_MARGIN);
 
-	std::string logs = "";
+	std::string logs = format(" Gen", 5) + char(124) + format(" Time (s)", 18) + "|" + format(" Collected", 10);
+	logs += "\n" + format("", logs.size() + 1, '_');
+	logs += "\n";
 
 	// Initialize drones
 	std::vector<Drone>& population = stadium.selector.getCurrentPopulation();
@@ -105,7 +107,7 @@ int main()
 		const uint64_t gen = i;
 		DNA dna = DnaLoader::loadDnaFrom(dna_file_1, dna_bytes_count, gen);
 		stadium.selector.getCurrentPopulation()[i].loadDNA(dna);
-		stadium.selector.getCurrentPopulation()[i].generation = 100 * gen + 1;
+		stadium.selector.getCurrentPopulation()[i].generation = std::max(uint64_t(1), 100 * gen);
 		stadium.selector.getCurrentPopulation()[i].index = i;
 	}
 
@@ -140,14 +142,20 @@ int main()
 		clock.restart();
 		stadium.current_iteration.time = 0.0f;
 
-		const uint32_t drone_id = drones_id[current_drone];
+		const uint32_t drone_id = drones_id[current_drone % drones_id.size()];
 		Drone& drone = stadium.selector.getCurrentPopulation()[drone_id];
+
+		text.setString(logs);
+
 		while (drone.alive &&
 			!drone.done &&
 			window.isOpen() &&
-			stadium.current_iteration.time < 100.0f)
+			stadium.current_iteration.time < 100.0f ||
+			current_drone == drones_id.size())
 		{
 			event_manager.processEvents();
+
+			stadium.current_iteration.time += dt;
 
 			if (stadium.use_manual_target) {
 				const sf::Vector2i mouse_pos = sf::Mouse::getPosition(window);
@@ -162,18 +170,20 @@ int main()
 
 			window.draw(text);
 
-			drone_renderer.draw(drone, window, state, colors[drone_id%colors.size()], !full_speed);
+			if (current_drone < drones_id.size()) {
+				drone_renderer.draw(drone, window, state, colors[drone_id%colors.size()], !full_speed);
 
-			sf::CircleShape target_c(target_radius);
-			target_c.setFillColor(sf::Color(255, 128, 0));
-			target_c.setOrigin(target_radius, target_radius);
-			target_c.setPosition(stadium.targets[stadium.drones_state[drone_id].id]);
-			window.draw(target_c);
+				sf::CircleShape target_c(target_radius);
+				target_c.setFillColor(sf::Color(255, 128, 0));
+				target_c.setOrigin(target_radius, target_radius);
+				target_c.setPosition(stadium.targets[stadium.drones_state[drone_id].id]);
+				window.draw(target_c);
 
-			// Print Network
+				// Print Network
 
-			if (draw_neural) {
-				network_printer.render(window, drone.network);
+				if (draw_neural) {
+					network_printer.render(window, drone.network);
+				}
 			}
 
 			if (draw_fitness) {
@@ -183,8 +193,15 @@ int main()
 			window.display();
 		}
 
-		logs += "Gen " + toString(drone.generation) + ": " + toString(drone.total_time) + "s (collected: " + toString(drone.collected) + ")\n";
-		text.setString(logs);
+		std::string dead = "[COMPLETE]";
+		if (!drone.alive) {
+			dead = "[CRASH]";
+		}
+		else if (stadium.current_iteration.time >= 100.0f) {
+			dead = "[TIME OUT]";
+		}
+
+		logs += "\n" + format(" " + toString(drone.generation), 5) + "|" + format(" " + toString(drone.total_time, 1), 6) + format(" " + dead, 12) + "|" + format(" " + toString(drone.collected) + " / " + toString(stadium.targets_count), 10);
 
 		++current_drone;
 	}

@@ -39,7 +39,7 @@ struct Stadium
 	Stadium(uint32_t population, sf::Vector2f size)
 		: population_size(population)
 		, selector(population)
-		, targets_count(5)
+		, targets_count(10)
 		, targets(targets_count)
 		, drones_state(population)
 		, area_size(size)
@@ -80,12 +80,12 @@ struct Stadium
 	bool checkAlive(const Drone& drone, float tolerance) const
 	{
 		const bool in_window = 
-			drone.position.x > -tolerance * area_size.x 
+			drone.position.x > -tolerance * area_size.x
 			&& drone.position.x < (1.0f + tolerance)*area_size.x
 			&& drone.position.y > -tolerance * area_size.y
 			&& drone.position.y < (1.0f + tolerance) * area_size.y;
 
-		return in_window && std::abs(drone.angle) < PI;
+		return in_window/* && std::abs(drone.angle) < PI*/;
 	}
 
 	uint32_t getAliveCount() const

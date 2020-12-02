@@ -43,6 +43,9 @@ uint32_t getIntUnderNonReset(const uint32_t max);
 float normalize(float value, float range);
 
 
+std::string format(const std::string& s, uint32_t width, char fill = ' ');
+
+
 template<typename T>
 float getLength(const sf::Vector2<T>& v)
 {

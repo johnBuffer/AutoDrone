@@ -43,7 +43,7 @@ struct Smoke
 		const float inv_ratio = (1.0f - ratio);
 		lifetime += dt;
 		angle += angle_var * inv_ratio * dt;
-		scale *= 1.0f + 7.0f * dt;
+		scale *= 1.0f + 2.0f * dt;
 		position += (speed * diretion * dt) / scale;
 	}
 };
