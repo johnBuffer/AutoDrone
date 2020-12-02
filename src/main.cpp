@@ -14,6 +14,7 @@
 #include "drone_renderer.hpp"
 #include "stadium.hpp"
 #include "dna_loader.hpp"
+#include "dynamic_blur.hpp"
 
 
 int main()
@@ -24,8 +25,10 @@ int main()
 	const uint32_t win_height = 900;
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 4;
-	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "AutoDrone", sf::Style::Default, settings);
+	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "AutoDrone", sf::Style::Fullscreen, settings);
 	window.setVerticalSyncEnabled(true);
+
+	Blur blur(win_width, win_height, 1.0f);
 
 	bool slow_motion = false;
 	const float base_dt = 0.007f;
@@ -71,6 +74,9 @@ int main()
 
 	DroneRenderer drone_renderer;
 	sf::RenderStates state;
+
+	sf::RenderTexture blur_target;
+	blur_target.create(win_width, win_height);
 
 	const std::string dna_file_1 = "../selector_output_2.bin";
 	const std::string dna_file_2 = "../selector_output_3.bin";
@@ -133,13 +139,12 @@ int main()
 		stadium.manual_target.y = mouse_pos.y;
 	}
 
-	std::vector<int32_t> drones_id{0, 1, 2, 5, 10, 20, 25, 33};
+	std::vector<int32_t> drones_id{/*0, 1, 2, 5, 10, 20, 25,*/ 33};
 
 	sf::Clock clock;
 	while (window.isOpen()) {
 		event_manager.processEvents();
 
-		clock.restart();
 		stadium.current_iteration.time = 0.0f;
 
 		const uint32_t drone_id = drones_id[current_drone % drones_id.size()];
@@ -154,7 +159,7 @@ int main()
 			current_drone == drones_id.size())
 		{
 			event_manager.processEvents();
-
+			
 			stadium.current_iteration.time += dt;
 
 			if (stadium.use_manual_target) {
@@ -163,21 +168,26 @@ int main()
 				stadium.manual_target.y = mouse_pos.y;
 			}
 
-			stadium.updateDrone(drone_id, dt, true);
+			if (clock.getElapsedTime().asSeconds() > 5.0f) {
+				stadium.updateDrone(drone_id, dt, true);
+			}
 
 			// Render
 			window.clear();
+			blur_target.clear();
 
 			window.draw(text);
 
-			if (current_drone < drones_id.size()) {
-				drone_renderer.draw(drone, window, state, colors[drone_id%colors.size()], !full_speed);
+			if (current_drone < drones_id.size() && clock.getElapsedTime().asSeconds() > 5.0f) {
+				drone_renderer.draw(drone, window, blur_target, state, colors[drone_id%colors.size()], !full_speed);
 
 				sf::CircleShape target_c(target_radius);
 				target_c.setFillColor(sf::Color(255, 128, 0));
 				target_c.setOrigin(target_radius, target_radius);
 				target_c.setPosition(stadium.targets[stadium.drones_state[drone_id].id]);
 				window.draw(target_c);
+				target_c.setFillColor(sf::Color::Black);
+				blur_target.draw(target_c);
 
 				// Print Network
 
@@ -190,6 +200,11 @@ int main()
 				fitness_graph.render(window);
 			}
 
+			blur_target.display();
+			sf::Sprite bloom_sprite = blur.apply(blur_target.getTexture(), 2);
+
+			window.draw(bloom_sprite, sf::BlendAdd);
+
 			window.display();
 		}
 
@@ -201,7 +216,7 @@ int main()
 			dead = "[TIME OUT]";
 		}
 
-		logs += "\n" + format(" " + toString(drone.generation), 5) + "|" + format(" " + toString(drone.total_time, 1), 6) + format(" " + dead, 12) + "|" + format(" " + toString(drone.collected) + " / " + toString(stadium.targets_count), 10);
+		logs += "\n" + format(" " + toString(drone.generation), 5) + "|" + format(" " + toString(drone.total_time, 1), 6) + format(" " + dead, 12) + "|" + format(" " + toString(drone.collected), 3, ' ', true) + " / " + toString(stadium.targets_count);
 
 		++current_drone;
 	}

@@ -71,7 +71,7 @@ float normalize(float value, float range)
 	return value / range;
 }
 
-std::string format(const std::string & s, uint32_t width, char fill)
+std::string format(const std::string & s, uint32_t width, char fill, bool pre)
 {
 	const int32_t diff = width - s.size();
 	if (diff < 0) {
@@ -80,7 +80,12 @@ std::string format(const std::string & s, uint32_t width, char fill)
 
 	std::string res = s;
 	for (uint32_t i(diff); i--;) {
-		res += fill;
+		if (!pre) {
+			res += fill;
+		}
+		else {
+			res = fill + res;
+		}
 	}
 	return res;
 }

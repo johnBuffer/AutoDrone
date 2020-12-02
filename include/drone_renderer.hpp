@@ -33,7 +33,7 @@ struct DroneRenderer
 		text.setFillColor(sf::Color::White);
 	}
 
-	void draw(const Drone::Thruster& thruster, const Drone& drone, sf::RenderTarget& target, sf::Color color, bool right, const sf::RenderStates& state)
+	void draw(const Drone::Thruster& thruster, const Drone& drone, sf::RenderTarget& target, sf::RenderTarget& blur, sf::Color color, bool right, const sf::RenderStates& state)
 	{
 		const float offset_dir = (right ? 1.0f : -1.0f);
 
@@ -90,6 +90,7 @@ struct DroneRenderer
 		flame_sprite.setScale(0.15f * power_ratio * rand_pulse_left, 0.15f * v_scale_left);
 		flame_sprite.setRotation(RAD_TO_DEG * angle);
 		target.draw(flame_sprite, state);
+		blur.draw(flame_sprite, state);
 
 		sf::RectangleShape thruster_body(sf::Vector2f(thruster_width, thruster_height));
 		thruster_body.setOrigin(thruster_width * 0.5f, thruster_height * 0.5f);
@@ -110,10 +111,11 @@ struct DroneRenderer
 		for (uint8_t i(0); i < power_percent; ++i) {
 			power_indicator.setPosition(power_start - float(i) * (height + margin) * thruster_dir);
 			target.draw(power_indicator, state);
+			blur.draw(power_indicator, state);
 		}
 	}
 
-	void draw(const Drone& drone, sf::RenderTarget& target, const sf::RenderStates& state, sf::Color color = sf::Color::White, bool draw_smoke = true)
+	void draw(const Drone& drone, sf::RenderTarget& target, sf::RenderTarget& blur, const sf::RenderStates& state, sf::Color color = sf::Color::White, bool draw_smoke = true)
 	{
 		text.setFillColor(sf::Color::White);
 		text.setString("Gen " + toString(drone.generation));
@@ -136,9 +138,9 @@ struct DroneRenderer
 		lat.setFillColor(sf::Color(70, 70, 70));
 		target.draw(lat, state);
 
-		draw(drone.left, drone, target, color, false, state);
-		draw(drone.right, drone, target, color, true, state);
-		drawBody(drone, color, target, state);
+		draw(drone.left, drone, target, blur, color, false, state);
+		draw(drone.right, drone, target, blur, color, true, state);
+		drawBody(drone, color, target, blur, state);
 
 		if (draw_smoke) {
 			for (const Smoke& s : drone.smokes) {
@@ -161,7 +163,7 @@ struct DroneRenderer
 		return sf::Color(255 * r, 255 * (1.0f - r), 0);
 	}
 
-	void drawBody(const Drone& drone, const sf::Color& color, sf::RenderTarget& target, const sf::RenderStates& state)
+	void drawBody(const Drone& drone, const sf::Color& color, sf::RenderTarget& target, sf::RenderTarget& blur, const sf::RenderStates& state)
 	{
 		const float angle_ratio = std::min(1.0f, std::abs(sin(drone.angle)));
 		const sf::Color eye_color = getRedGreenRatio(angle_ratio);
@@ -171,7 +173,7 @@ struct DroneRenderer
 		sf::VertexArray va(sf::TriangleFan, quality + 3);
 		const float da = 2.0f * PI / float(quality);
 		va[0].position = drone.position;
-		va[0].color = eye_color;
+		va[0].color = color;
 		for (uint32_t i(1); i < quality / 2 + 2; ++i) {
 			const float angle = drone.angle - (i - 1) * da;
 			va[i].position = drone.position + r * sf::Vector2f(cos(angle), sin(angle));
@@ -191,6 +193,7 @@ struct DroneRenderer
 		c.setPosition(drone.position);
 		c.setFillColor(eye_color);
 		target.draw(c, state);
+		blur.draw(c, state);
 
 		const float led_size = 2.0f;
 		const float led_offset = 12.0f;
@@ -200,17 +203,21 @@ struct DroneRenderer
 		c_led.setPosition(drone.position);
 		c_led.setFillColor(getRedGreenRatio(drone.left.angle_ratio));
 		target.draw(c_led, state);
+		blur.draw(c_led, state);
 
 		c_led.setOrigin(led_size - led_offset, led_size);
 		c_led.setFillColor(getRedGreenRatio(drone.right.angle_ratio));
 		target.draw(c_led, state);
+		blur.draw(c_led, state);
 
 		c_led.setOrigin(led_size, led_size - 0.45f * r);
 		c_led.setFillColor(getRedGreenRatio(5.0f * drone.network.last_input[0]));
 		target.draw(c_led, state);
+		blur.draw(c_led, state);
 
 		c_led.setOrigin(led_size, led_size + 0.5f * r);
 		c_led.setFillColor(getRedGreenRatio(5.0f * drone.network.last_input[1]));
 		target.draw(c_led, state);
+		blur.draw(c_led, state);
 	}
 };

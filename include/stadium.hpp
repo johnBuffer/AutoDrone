@@ -39,7 +39,7 @@ struct Stadium
 	Stadium(uint32_t population, sf::Vector2f size)
 		: population_size(population)
 		, selector(population)
-		, targets_count(10)
+		, targets_count(12)
 		, targets(targets_count)
 		, drones_state(population)
 		, area_size(size)
@@ -52,7 +52,7 @@ struct Stadium
 	{
 		// Initialize targets
 		const float border = 150.0f;
-		for (uint32_t i(100); i--;) {
+		for (uint32_t i(300); i--;) {
 			getRandUnder(1.0f);
 		}
 		for (uint32_t i(0); i < targets_count; ++i) {
