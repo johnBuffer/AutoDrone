@@ -39,7 +39,7 @@ struct Stadium
 	Stadium(uint32_t population, sf::Vector2f size)
 		: population_size(population)
 		, selector(population)
-		, targets_count(10)
+		, targets_count(5)
 		, targets(targets_count)
 		, drones_state(population)
 		, area_size(size)
@@ -51,7 +51,7 @@ struct Stadium
 	void initializeTargets()
 	{
 		// Initialize targets
-		const float border = 200.0f;
+		const float border = 150.0f;
 		for (uint32_t i(0); i < targets_count; ++i) {
 			targets[i] = sf::Vector2f(border + getRandUnder(area_size.x - 2.0f * border), border + getRandUnder(area_size.y - 2.0f * border));
 		}
@@ -101,7 +101,15 @@ struct Stadium
 		const float target_radius = 8.0f;
 		Drone& d = selector.getCurrentPopulation()[i];
 		if (d.alive) {
-			const sf::Vector2f current_target = use_manual_target ? manual_target : targets[drones_state[i].id];
+			sf::Vector2f current_target = use_manual_target ? manual_target : targets[drones_state[i].id];
+			if (d.collected == targets_count && !use_manual_target) {
+				const float border = 50.0f;
+				const float v_border = 120.0f;
+				const uint32_t row_size = 7;
+				const float width = (area_size.x - 2.0 * border) / float(row_size);
+				current_target.x = border + (d.index % row_size + 0.5f) * width;
+				current_target.y = v_border + (d.index / row_size) * 150;
+			}
 			const sf::Vector2f to_target = current_target - d.position;
 
 			std::vector<float> inputs = {
@@ -114,13 +122,17 @@ struct Stadium
 				d.angular_velocity * dt
 			};
 
+			if (d.collected < targets_count) {
+				d.total_time += dt;
+			}
+
 			d.execute(inputs);
 			d.update(dt, update_smoke);
 			
 			// We don't want weirdos
 			const float to_target_dist = getLength(to_target);
 
-			d.alive = checkAlive(d, 0.125f);
+			d.alive = checkAlive(d, 0.5f);
 
 			TargetState& state = drones_state[i];
 
@@ -129,9 +141,15 @@ struct Stadium
 			if (to_target_dist < target_radius + d.radius && !use_manual_target) {
 				state.time_in += dt;
 				if (state.time_in > target_time) {
-					state.time_out = 0.0f;
-					state.id = (state.id + 1) % targets_count;
-					state.points = getLength(d.position - targets[state.id]);
+					if (d.collected < targets_count) {
+						state.time_out = 0.0f;
+						state.id = (state.id + 1) % targets_count;
+						state.points = getLength(d.position - targets[state.id]);
+						++d.collected;
+					}
+					else {
+						d.done = true;
+					}
 				}
 			}
 			else {

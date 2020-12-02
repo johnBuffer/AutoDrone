@@ -66,11 +66,18 @@ struct Drone : public AiUnit
 	float angular_velocity;
 	std::list<Smoke> smokes;
 	uint32_t generation;
+	uint32_t collected;
+	uint32_t index;
+	float total_time;
+	bool done;
 
 	Drone()
 		: AiUnit(architecture)
 		, radius(20.0f)
 		, position(0.0f, 0.0f)
+		, collected(0)
+		, total_time(0.0f)
+		, done(false)
 	{
 
 	}
@@ -91,6 +98,9 @@ struct Drone : public AiUnit
 		: AiUnit(architecture)
 		, radius(20.0f)
 		, position(pos)
+		, collected(0)
+		, total_time(0.0f)
+		, done(false)
 	{
 	}
 

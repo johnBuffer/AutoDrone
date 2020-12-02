@@ -14,7 +14,7 @@ struct DroneRenderer
 	sf::Sprite smoke_sprite;
 
 	sf::Font font;
-	sf::Text generation_text;
+	sf::Text text;
 
 	DroneRenderer()
 	{
@@ -28,9 +28,9 @@ struct DroneRenderer
 		smoke_sprite.setOrigin(126, 134);
 
 		font.loadFromFile("../font.ttf");
-		generation_text.setFont(font);
-		generation_text.setCharacterSize(24);
-		generation_text.setFillColor(sf::Color::White);
+		text.setFont(font);
+		text.setCharacterSize(24);
+		text.setFillColor(sf::Color::White);
 	}
 
 	void draw(const Drone::Thruster& thruster, const Drone& drone, sf::RenderTarget& target, sf::Color color, bool right, const sf::RenderStates& state)
@@ -114,10 +114,17 @@ struct DroneRenderer
 
 	void draw(const Drone& drone, sf::RenderTarget& target, const sf::RenderStates& state, sf::Color color = sf::Color::White, bool draw_smoke = true)
 	{
-		generation_text.setString(toString(drone.generation));
-		generation_text.setOrigin(generation_text.getGlobalBounds().width * 0.5f, 60);
-		generation_text.setPosition(drone.position);
-		target.draw(generation_text);
+		text.setFillColor(sf::Color::White);
+		text.setString(toString(drone.generation));
+		text.setOrigin(text.getGlobalBounds().width * 0.5f, 60);
+		text.setPosition(drone.position);
+		target.draw(text);
+
+		text.setString(toString(drone.total_time, 0) + "s");
+		text.setFillColor(sf::Color(255, 128, 0));
+		text.setOrigin(text.getGlobalBounds().width * 0.5f, 90);
+		text.setPosition(drone.position);
+		target.draw(text);
 
 		// Draw body
 		const float drone_width = drone.radius + drone.thruster_offset;
@@ -138,7 +145,9 @@ struct DroneRenderer
 				smoke_sprite.setPosition(s.position);
 				smoke_sprite.setRotation(RAD_TO_DEG * s.angle);
 				smoke_sprite.setScale(smoke_scale, smoke_scale);
-				const uint8_t smoke_color = 200 * std::min(1.0f, 5.0f / s.scale);
+
+				const uint8_t base = drone.done ? 50 : 200;
+				const uint8_t smoke_color = base * std::min(1.0f, 5.0f / s.scale);
 				smoke_sprite.setColor(sf::Color(smoke_color, smoke_color, smoke_color, 0.025f * s.speed * (1.0f - s.getRatio())));
 				target.draw(smoke_sprite, state);
 			}
@@ -196,11 +205,11 @@ struct DroneRenderer
 		target.draw(c_led, state);
 
 		c_led.setOrigin(led_size, led_size - 0.45f * r);
-		c_led.setFillColor(getRedGreenRatio(1.0f - drone.network.last_input[0]));
+		c_led.setFillColor(getRedGreenRatio(5.0f * drone.network.last_input[0]));
 		target.draw(c_led, state);
 
 		c_led.setOrigin(led_size, led_size + 0.5f * r);
-		c_led.setFillColor(getRedGreenRatio(1.0f - drone.network.last_input[1]));
+		c_led.setFillColor(getRedGreenRatio(5.0f * drone.network.last_input[1]));
 		target.draw(c_led, state);
 	}
 };

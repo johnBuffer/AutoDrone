@@ -21,7 +21,7 @@ int main()
 	NumberGenerator<>::initialize();
 
 	const uint32_t win_width = 1600;
-	const uint32_t win_height = 800;
+	const uint32_t win_height = 900;
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 4;
 	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "AutoDrone", sf::Style::Default, settings);
@@ -51,7 +51,7 @@ int main()
 
 	bool show_just_one = false;
 	bool full_speed = false;
-	bool draw_neural = true;
+	bool draw_neural = false;
 	bool draw_drones = true;
 	bool draw_fitness = true;
 
@@ -72,9 +72,16 @@ int main()
 	DroneRenderer drone_renderer;
 	sf::RenderStates state;
 
-	const uint32_t pop_size = DnaLoader::getDnaCount("../selector_output_3.bin", Network::getParametersCount(architecture) * 4);
+	const std::string dna_file_1 = "../selector_output_2.bin";
+	const std::string dna_file_2 = "../selector_output_3.bin";
+	const std::string dna_file_3 = "../selector_output_4.bin";
+	const uint64_t dna_bytes_count = Network::getParametersCount(architecture) * 4;
+
+	std::cout << "pop size 3 " << DnaLoader::getDnaCount(dna_file_3, dna_bytes_count) << std::endl;
+
+	uint32_t pop_size = 35;
 	Stadium stadium(pop_size, sf::Vector2f(win_width, win_height));
-	event_manager.addKeyPressedCallback(sf::Keyboard::M, [&](sfev::CstEv) { stadium.use_manual_target = !stadium.use_manual_target; });
+	event_manager.addKeyPressedCallback(sf::Keyboard::M, [&](sfev::CstEv) { stadium.use_manual_target = !stadium.use_manual_target; window.setMouseCursorVisible(!stadium.use_manual_target); });
 
 	std::cout << "Pop size " << pop_size << std::endl;
 
@@ -86,11 +93,28 @@ int main()
 		std::vector<Drone>& population = stadium.selector.getCurrentPopulation();
 		stadium.initializeIteration();
 
-		for (uint32_t i(0); i < pop_size; ++i) {
+		for (uint32_t i(0); i < 14; ++i) {
 			const uint64_t gen = i;
-			DNA dna = DnaLoader::loadDnaFrom("../selector_output_3.bin", Network::getParametersCount(architecture) * 4, gen);
+			DNA dna = DnaLoader::loadDnaFrom(dna_file_1, dna_bytes_count, gen);
 			stadium.selector.getCurrentPopulation()[i].loadDNA(dna);
 			stadium.selector.getCurrentPopulation()[i].generation = 100 * gen + 1;
+			stadium.selector.getCurrentPopulation()[i].index = i;
+		}
+
+		for (uint32_t i(14); i < 28; ++i) {
+			const uint64_t gen = i - 14;
+			DNA dna = DnaLoader::loadDnaFrom(dna_file_2, dna_bytes_count, gen);
+			stadium.selector.getCurrentPopulation()[i].loadDNA(dna);
+			stadium.selector.getCurrentPopulation()[i].generation = 2000 + 100 * gen;
+			stadium.selector.getCurrentPopulation()[i].index = i;
+		}
+
+		for (uint32_t i(28); i < 35; ++i) {
+			const uint64_t gen = i - 28 + 15;
+			DNA dna = DnaLoader::loadDnaFrom(dna_file_3, dna_bytes_count, gen);
+			stadium.selector.getCurrentPopulation()[i].loadDNA(dna);
+			stadium.selector.getCurrentPopulation()[i].generation = 3000 + 100 * gen;
+			stadium.selector.getCurrentPopulation()[i].index = i;
 		}
 		
 		if (stadium.use_manual_target) {
@@ -128,11 +152,13 @@ int main()
 				}
 			}
 			
-			sf::CircleShape target_c(target_radius);
-			target_c.setFillColor(sf::Color(255, 128, 0));
-			target_c.setOrigin(target_radius, target_radius);
-			target_c.setPosition(stadium.use_manual_target ? stadium.manual_target : stadium.targets[stadium.drones_state[current_drone_i].id]);
-			window.draw(target_c);
+			if (stadium.use_manual_target) {
+				sf::CircleShape target_c(target_radius);
+				target_c.setFillColor(sf::Color(255, 128, 0));
+				target_c.setOrigin(target_radius, target_radius);
+				target_c.setPosition(stadium.manual_target);
+				window.draw(target_c);
+			}
 
 			// Print Network
 			if (!full_speed && draw_neural) {
