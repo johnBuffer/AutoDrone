@@ -52,6 +52,9 @@ struct Stadium
 	{
 		// Initialize targets
 		const float border = 150.0f;
+		for (uint32_t i(100); i--;) {
+			getRandUnder(1.0f);
+		}
 		for (uint32_t i(0); i < targets_count; ++i) {
 			targets[i] = sf::Vector2f(border + getRandUnder(area_size.x - 2.0f * border), border + getRandUnder(area_size.y - 2.0f * border));
 		}
@@ -136,6 +139,8 @@ struct Stadium
 
 			TargetState& state = drones_state[i];
 
+			d.done = d.collected == targets_count;
+
 			// Next target if needed
 			const float target_time = 3.0f;
 			if (to_target_dist < target_radius + d.radius && !use_manual_target) {
@@ -146,9 +151,6 @@ struct Stadium
 						state.id = (state.id + 1) % targets_count;
 						state.points = getLength(d.position - targets[state.id]);
 						++d.collected;
-					}
-					else {
-						d.done = true;
 					}
 				}
 			}

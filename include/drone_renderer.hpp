@@ -115,12 +115,12 @@ struct DroneRenderer
 	void draw(const Drone& drone, sf::RenderTarget& target, const sf::RenderStates& state, sf::Color color = sf::Color::White, bool draw_smoke = true)
 	{
 		text.setFillColor(sf::Color::White);
-		text.setString(toString(drone.generation));
+		text.setString("Gen " + toString(drone.generation));
 		text.setOrigin(text.getGlobalBounds().width * 0.5f, 60);
 		text.setPosition(drone.position);
 		target.draw(text);
 
-		text.setString(toString(drone.total_time, 0) + "s");
+		text.setString(toString(drone.total_time, 1) + "s");
 		text.setFillColor(sf::Color(255, 128, 0));
 		text.setOrigin(text.getGlobalBounds().width * 0.5f, 90);
 		text.setPosition(drone.position);

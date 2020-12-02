@@ -85,47 +85,68 @@ int main()
 
 	std::cout << "Pop size " << pop_size << std::endl;
 
+	uint32_t current_drone = 0;
+
+	sf::Font font;
+	font.loadFromFile("../font.ttf");
+	sf::Text text;
+	text.setFont(font);
+	text.setCharacterSize(18);
+	text.setFillColor(sf::Color::White);
+	text.setPosition(2.0f * GUI_MARGIN, GUI_MARGIN);
+
+	std::string logs = "";
+
+	// Initialize drones
+	std::vector<Drone>& population = stadium.selector.getCurrentPopulation();
+	stadium.initializeIteration();
+
+	for (uint32_t i(0); i < 14; ++i) {
+		const uint64_t gen = i;
+		DNA dna = DnaLoader::loadDnaFrom(dna_file_1, dna_bytes_count, gen);
+		stadium.selector.getCurrentPopulation()[i].loadDNA(dna);
+		stadium.selector.getCurrentPopulation()[i].generation = 100 * gen + 1;
+		stadium.selector.getCurrentPopulation()[i].index = i;
+	}
+
+	for (uint32_t i(14); i < 28; ++i) {
+		const uint64_t gen = i - 14;
+		DNA dna = DnaLoader::loadDnaFrom(dna_file_2, dna_bytes_count, gen);
+		stadium.selector.getCurrentPopulation()[i].loadDNA(dna);
+		stadium.selector.getCurrentPopulation()[i].generation = 2000 + 100 * gen;
+		stadium.selector.getCurrentPopulation()[i].index = i;
+	}
+
+	for (uint32_t i(28); i < 35; ++i) {
+		const uint64_t gen = i - 28 + 20;
+		DNA dna = DnaLoader::loadDnaFrom(dna_file_3, dna_bytes_count, gen);
+		stadium.selector.getCurrentPopulation()[i].loadDNA(dna);
+		stadium.selector.getCurrentPopulation()[i].generation = 3000 + 100 * gen;
+		stadium.selector.getCurrentPopulation()[i].index = i;
+	}
+
+	if (stadium.use_manual_target) {
+		const sf::Vector2i mouse_pos = sf::Mouse::getPosition(window);
+		stadium.manual_target.x = mouse_pos.x;
+		stadium.manual_target.y = mouse_pos.y;
+	}
+
+	std::vector<int32_t> drones_id{0, 1, 2, 5, 10, 20, 25, 33};
+
 	sf::Clock clock;
 	while (window.isOpen()) {
 		event_manager.processEvents();
 
-		// Initialize drones
-		std::vector<Drone>& population = stadium.selector.getCurrentPopulation();
-		stadium.initializeIteration();
-
-		for (uint32_t i(0); i < 14; ++i) {
-			const uint64_t gen = i;
-			DNA dna = DnaLoader::loadDnaFrom(dna_file_1, dna_bytes_count, gen);
-			stadium.selector.getCurrentPopulation()[i].loadDNA(dna);
-			stadium.selector.getCurrentPopulation()[i].generation = 100 * gen + 1;
-			stadium.selector.getCurrentPopulation()[i].index = i;
-		}
-
-		for (uint32_t i(14); i < 28; ++i) {
-			const uint64_t gen = i - 14;
-			DNA dna = DnaLoader::loadDnaFrom(dna_file_2, dna_bytes_count, gen);
-			stadium.selector.getCurrentPopulation()[i].loadDNA(dna);
-			stadium.selector.getCurrentPopulation()[i].generation = 2000 + 100 * gen;
-			stadium.selector.getCurrentPopulation()[i].index = i;
-		}
-
-		for (uint32_t i(28); i < 35; ++i) {
-			const uint64_t gen = i - 28 + 15;
-			DNA dna = DnaLoader::loadDnaFrom(dna_file_3, dna_bytes_count, gen);
-			stadium.selector.getCurrentPopulation()[i].loadDNA(dna);
-			stadium.selector.getCurrentPopulation()[i].generation = 3000 + 100 * gen;
-			stadium.selector.getCurrentPopulation()[i].index = i;
-		}
-		
-		if (stadium.use_manual_target) {
-			const sf::Vector2i mouse_pos = sf::Mouse::getPosition(window);
-			stadium.manual_target.x = mouse_pos.x;
-			stadium.manual_target.y = mouse_pos.y;
-		}
-
 		clock.restart();
+		stadium.current_iteration.time = 0.0f;
 
-		while (stadium.getAliveCount() && window.isOpen() && stadium.current_iteration.time < 100.0f) {
+		const uint32_t drone_id = drones_id[current_drone];
+		Drone& drone = stadium.selector.getCurrentPopulation()[drone_id];
+		while (drone.alive &&
+			!drone.done &&
+			window.isOpen() &&
+			stadium.current_iteration.time < 100.0f)
+		{
 			event_manager.processEvents();
 
 			if (stadium.use_manual_target) {
@@ -134,40 +155,25 @@ int main()
 				stadium.manual_target.y = mouse_pos.y;
 			}
 
-			stadium.update(dt, !full_speed);
+			stadium.updateDrone(drone_id, dt, true);
 
 			// Render
-			window.clear(/*sf::Color(191, 219, 247)*/);
+			window.clear();
 
-			uint32_t current_drone_i = 0;
-			if (draw_drones) {
-				for (Drone& d : population) {
-					if (d.alive) {
-						drone_renderer.draw(d, window, state, colors[current_drone_i%colors.size()], !full_speed);
-						if (show_just_one) {
-							break;
-						}
-					}
-					++current_drone_i;
-				}
-			}
-			
-			if (stadium.use_manual_target) {
-				sf::CircleShape target_c(target_radius);
-				target_c.setFillColor(sf::Color(255, 128, 0));
-				target_c.setOrigin(target_radius, target_radius);
-				target_c.setPosition(stadium.manual_target);
-				window.draw(target_c);
-			}
+			window.draw(text);
+
+			drone_renderer.draw(drone, window, state, colors[drone_id%colors.size()], !full_speed);
+
+			sf::CircleShape target_c(target_radius);
+			target_c.setFillColor(sf::Color(255, 128, 0));
+			target_c.setOrigin(target_radius, target_radius);
+			target_c.setPosition(stadium.targets[stadium.drones_state[drone_id].id]);
+			window.draw(target_c);
 
 			// Print Network
-			if (!full_speed && draw_neural) {
-				for (Drone& d : population) {
-					if (d.alive) {
-						network_printer.render(window, d.network);
-						break;
-					}
-				}
+
+			if (draw_neural) {
+				network_printer.render(window, drone.network);
 			}
 
 			if (draw_fitness) {
@@ -176,8 +182,11 @@ int main()
 
 			window.display();
 		}
-		
-		fitness_graph.next();
+
+		logs += "Gen " + toString(drone.generation) + ": " + toString(drone.total_time) + "s (collected: " + toString(drone.collected) + ")\n";
+		text.setString(logs);
+
+		++current_drone;
 	}
 
 	return 0;
