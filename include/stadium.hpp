@@ -56,7 +56,8 @@ struct Stadium
 			getRandUnder(1.0f);
 		}
 		for (uint32_t i(0); i < targets_count; ++i) {
-			targets[i] = sf::Vector2f(border + getRandUnder(area_size.x - 2.0f * border), border + getRandUnder(area_size.y - 2.0f * border));
+			//targets[i] = sf::Vector2f(border + getRandUnder(area_size.x - 2.0f * border), border + getRandUnder(area_size.y - 2.0f * border));
+			targets[i] = sf::Vector2f(area_size.x/2.0f, area_size.y / 2.0f);
 		}
 	}
 
@@ -142,7 +143,7 @@ struct Stadium
 			d.done = d.collected == targets_count;
 
 			// Next target if needed
-			const float target_time = 3.0f;
+			const float target_time = 30.0f;
 			if (to_target_dist < target_radius + d.radius && !use_manual_target) {
 				state.time_in += dt;
 				if (state.time_in > target_time) {
