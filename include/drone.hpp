@@ -64,7 +64,6 @@ struct Drone : public AiUnit
 	sf::Vector2f velocity;
 	float angle;
 	float angular_velocity;
-	std::list<Smoke> smokes;
 
 	Drone()
 		: AiUnit(architecture)
@@ -148,34 +147,6 @@ struct Drone : public AiUnit
 		position += velocity * dt;
 		angular_velocity += getTorque() * dt;
 		angle += angular_velocity * dt;
-
-		if (update_smoke) {
-			const sf::Vector2f drone_dir(cos(angle), sin(angle));
-			const float smoke_vert_offset = 80.0f;
-			const float smoke_duration = 0.5f;
-			const float smoke_speed_coef = 0.8f;
-			if (left.power_ratio > 0.1f) {
-				const float left_angle = angle - left.angle + HalfPI;
-				const sf::Vector2f left_direction(cos(left_angle), sin(left_angle));
-				const sf::Vector2f left_pos = position - (thruster_offset + 20.0f) * drone_dir + left_direction * smoke_vert_offset * left.power_ratio;
-
-				smokes.push_back(Smoke(left_pos, left_direction, smoke_speed_coef * left.getPower(), left.power_ratio, smoke_duration* left.power_ratio));
-			}
-
-			if (right.power_ratio > 0.1f) {
-				const float right_angle = angle + right.angle + HalfPI;
-				const sf::Vector2f right_direction(cos(right_angle), sin(right_angle));
-				const sf::Vector2f right_pos = position + (thruster_offset + 20.0f) * drone_dir + right_direction * smoke_vert_offset * right.power_ratio;
-
-				smokes.push_back(Smoke(right_pos, right_direction, smoke_speed_coef * right.getPower(), right.power_ratio, smoke_duration* right.power_ratio));
-			}
-
-			for (Smoke& s : smokes) {
-				s.update(dt);
-			}
-
-			smokes.remove_if([this](const Smoke& s) { return s.done(); });
-		}
 	}
 
 	float getNormalizedAngle() const

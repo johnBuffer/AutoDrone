@@ -11,7 +11,7 @@
 
 
 const float population_elite_ratio = 0.05f;
-const float population_conservation_ratio = 0.5f;
+const float population_conservation_ratio = 0.25f;
 
 
 template<typename T>
@@ -65,7 +65,7 @@ struct Selector
 		for (uint32_t i(elites_count); i < population_size; ++i) {
 			const T& unit_1 = wheel.pick(current_units);
 			const T& unit_2 = wheel.pick(current_units);
-			const float mutation_proba = 1.0f / std::max(1.0f, log(0.5f*(unit_1.fitness + unit_2.fitness)));
+			const float mutation_proba = 0.01f;
 			if (unit_1.dna == unit_2.dna) {
 				++evolve_count;
 				next_units[i].loadDNA(DNAUtils::evolve<float>(unit_1.dna, mutation_proba, mutation_proba));

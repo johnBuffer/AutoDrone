@@ -117,18 +117,6 @@ struct DroneRenderer
 		draw(drone.left, drone, target, color, false, state);
 		draw(drone.right, drone, target, color, true, state);
 		drawBody(drone, color, target, state);
-
-		if (draw_smoke) {
-			for (const Smoke& s : drone.smokes) {
-				const float smoke_scale = 0.25f * s.scale;
-				smoke_sprite.setPosition(s.position);
-				smoke_sprite.setRotation(RAD_TO_DEG * s.angle);
-				smoke_sprite.setScale(smoke_scale, smoke_scale);
-				const uint8_t smoke_color = 255 * std::min(1.0f, 5.0f / s.scale);
-				smoke_sprite.setColor(sf::Color(smoke_color, smoke_color, smoke_color, 0.025f * s.speed * (1.0f - s.getRatio())));
-				target.draw(smoke_sprite, state);
-			}
-		}
 	}
 
 	sf::Color getRedGreenRatio(float ratio) const

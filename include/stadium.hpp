@@ -129,23 +129,18 @@ struct Stadium
 			// We don't want weirdos
 			const float score_factor = std::pow(cos(d.angle), 2.0f);
 			const float to_target_dist = getLength(to_target);
-			const float fitness_denom = std::max(1.0f, to_target_dist);
-			d.fitness += score_factor / fitness_denom;
-			if (d.fitness > current_iteration.best_fitness) {
-				current_iteration.best_fitness = d.fitness;
-			}
 
 			d.alive = checkAlive(d, 0.25f);
 
 			TargetState& state = drones_state[i];
 
 			// Next target if needed
-			const float target_reward_coef = score_factor * 10.0f;
+			const float target_reward_coef = score_factor * 1.0f;
 			const float target_time = 3.0f;
 			if (to_target_dist < target_radius + d.radius) {
 				state.time_in += dt;
 				if (state.time_in > target_time) {
-					d.fitness += target_reward_coef * state.points / (1.0f + state.time_out + 100.0f * std::abs(d.angle));
+					d.fitness += target_reward_coef * state.points / (1.0f + state.time_out + to_target_dist);
 					state.time_out = 0.0f;
 					state.id = (state.id + 1) % targets_count;
 					state.points = getLength(d.position - targets[state.id]);
@@ -154,6 +149,10 @@ struct Stadium
 			else {
 				state.time_out += dt;
 				state.time_in = 0.0f;
+			}
+
+			if (d.fitness > current_iteration.best_fitness) {
+				current_iteration.best_fitness = d.fitness;
 			}
 		}
 	}

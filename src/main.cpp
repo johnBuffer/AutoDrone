@@ -84,7 +84,7 @@ int main()
 
 	const uint32_t pop_size = 1600;
 	Stadium stadium(pop_size, sf::Vector2f(win_width, win_height));
-	stadium.loadDnaFromFile("../selector_output_2.bin");
+	stadium.loadDnaFromFile("../selector_output_3.bin");
 
 	DroneRenderer drone_renderer;
 	sf::RenderStates state;
