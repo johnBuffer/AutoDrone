@@ -101,7 +101,7 @@ int main()
 	text.setFillColor(sf::Color::White);
 	text.setPosition(2.0f * GUI_MARGIN, GUI_MARGIN);
 
-	std::string logs = format(" Gen", 5) + char(124) + format(" Time (s)", 18) + "|" + format(" Collected", 10);
+	std::string logs = format(" Gen", 6) + char(124) + format(" Time (s)", 18) + "|" + format(" Collected", 10);
 	logs += "\n" + format("", logs.size() + 1, '_');
 	logs += "\n";
 
@@ -139,7 +139,7 @@ int main()
 		stadium.manual_target.y = mouse_pos.y;
 	}
 
-	std::vector<int32_t> drones_id{/*0, 1, 2, 5, 10, 20, 25,*/ 33};
+	std::vector<int32_t> drones_id{0, 1, 2, 5, 10, 20, 25, 33};
 
 	sf::Clock clock;
 	while (window.isOpen()) {
@@ -216,7 +216,7 @@ int main()
 			dead = "[TIME OUT]";
 		}
 
-		logs += "\n" + format(" " + toString(drone.generation), 5) + "|" + format(" " + toString(drone.total_time, 1), 6) + format(" " + dead, 12) + "|" + format(" " + toString(drone.collected), 3, ' ', true) + " / " + toString(stadium.targets_count);
+		logs += "\n" + format(" " + toString(drone.generation), 6) + "|" + format(" " + toString(drone.total_time, 1), 6) + format(" " + dead, 12) + "|" + format(" " + toString(drone.collected), 3, ' ', true) + " / " + toString(stadium.targets_count);
 
 		++current_drone;
 	}
