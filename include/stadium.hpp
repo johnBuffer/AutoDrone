@@ -96,7 +96,12 @@ struct Stadium
 		if (d.alive) {
 			sf::Vector2f current_target = manual_target;
 			if (!use_manual_target) {
-				current_target = area_size * 0.5f;
+				if (d.index == 0) {
+					current_target = area_size * 0.5f;
+				}
+				else {
+					current_target = area_size * 0.5f;
+				}
 			}
 
 			const sf::Vector2f to_target = current_target - d.position;

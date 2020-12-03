@@ -83,7 +83,7 @@ int main()
 	const std::string dna_file_3 = "../selector_output_4.bin";
 	const uint64_t dna_bytes_count = Network::getParametersCount(architecture) * 4;
 
-	uint32_t pop_size = 1;
+	uint32_t pop_size = 10;
 	Stadium stadium(pop_size, sf::Vector2f(win_width, win_height));
 	event_manager.addKeyPressedCallback(sf::Keyboard::M, [&](sfev::CstEv) { stadium.use_manual_target = !stadium.use_manual_target; window.setMouseCursorVisible(!stadium.use_manual_target); });
 
