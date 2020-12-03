@@ -25,8 +25,9 @@ int main()
 	const uint32_t win_height = 900;
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 4;
-	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "AutoDrone", sf::Style::Default, settings);
+	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "AutoDrone", sf::Style::Fullscreen, settings);
 	window.setVerticalSyncEnabled(true);
+	window.setMouseCursorVisible(false);
 
 	Blur blur(win_width, win_height, 1.0f);
 
@@ -83,9 +84,9 @@ int main()
 	const std::string dna_file_3 = "../selector_output_4.bin";
 	const uint64_t dna_bytes_count = Network::getParametersCount(architecture) * 4;
 
-	uint32_t pop_size = 10;
+	uint32_t pop_size = 35;
 	Stadium stadium(pop_size, sf::Vector2f(win_width, win_height));
-	event_manager.addKeyPressedCallback(sf::Keyboard::M, [&](sfev::CstEv) { stadium.use_manual_target = !stadium.use_manual_target; window.setMouseCursorVisible(!stadium.use_manual_target); });
+	event_manager.addKeyPressedCallback(sf::Keyboard::M, [&](sfev::CstEv) { stadium.use_manual_target = !stadium.use_manual_target; });
 
 	uint32_t current_drone = 0;
 
@@ -95,10 +96,12 @@ int main()
 
 	std::cout << DnaLoader::getDnaCount(dna_file_3, dna_bytes_count) << std::endl;
 
-	DNA dna = DnaLoader::loadDnaFrom(dna_file_3, dna_bytes_count, 52);
+	uint32_t i(0);
+	DNA dna = DnaLoader::loadDnaFrom(dna_file_3, dna_bytes_count, 25);
 	for (Drone& d : stadium.selector.getCurrentPopulation()) {
 		d.loadDNA(dna);
 		d.generation = 5500;
+		d.index = i++;
 	}
 
 	if (stadium.use_manual_target) {
