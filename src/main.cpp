@@ -17,6 +17,10 @@
 
 int main()
 {
+	std::cout << "Initializing Python interpreter..." << std::endl;
+	Py_Initialize();
+	std::cout << "Done." << std::endl;
+
 	NumberGenerator<>::initialize();
 
 	const uint32_t win_width = 1000;
@@ -151,6 +155,8 @@ int main()
 		fitness_graph.next();
 		stadium.nextIteration();
 	}
+
+	Py_FinalizeEx();
 
 	return 0;
 }

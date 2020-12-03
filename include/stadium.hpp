@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Python.h>
 #include <swarm.hpp>
 
 #include "selector.hpp"
@@ -55,12 +56,6 @@ struct Stadium
 		const uint64_t dna_count = DnaLoader::getDnaCount(filename, bytes_count);
 		for (uint64_t i(0); i < dna_count && i < population_size; ++i) {
 			const DNA dna = DnaLoader::loadDnaFrom(filename, bytes_count, i);
-			/*if (!i) {
-				const uint64_t element_count = dna.getElementsCount<float>();
-				for (uint64_t j(0); j < element_count; ++j) {
-					std::cout << dna.get<float>(j) << std::endl;
-				}
-			}*/
 			selector.getCurrentPopulation()[i].loadDNA(dna);
 		}
 	}
