@@ -106,14 +106,6 @@ struct Stadium
 				current_target = area_size * 0.5f;
 			}
 
-			if (d.collected == targets_count && !use_manual_target) {
-				const float border = 50.0f;
-				const float v_border = 120.0f;
-				const uint32_t row_size = 7;
-				const float width = (area_size.x - 2.0 * border) / float(row_size);
-				current_target.x = border + (d.index % row_size + 0.5f) * width;
-				current_target.y = v_border + (d.index / row_size) * 150;
-			}
 			const sf::Vector2f to_target = current_target - d.position;
 
 			std::vector<float> inputs = {
@@ -126,16 +118,9 @@ struct Stadium
 				d.angular_velocity * dt
 			};
 
-			if (d.collected < targets_count) {
-				d.total_time += dt;
-			}
-
 			d.execute(inputs);
 			d.update(dt, update_smoke);
 			
-			// We don't want weirdos
-			const float to_target_dist = getLength(to_target);
-
 			d.alive = checkAlive(d, 0.5f);
 		}
 	}

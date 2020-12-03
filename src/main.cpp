@@ -83,13 +83,9 @@ int main()
 	const std::string dna_file_3 = "../selector_output_4.bin";
 	const uint64_t dna_bytes_count = Network::getParametersCount(architecture) * 4;
 
-	std::cout << "pop size 3 " << DnaLoader::getDnaCount(dna_file_3, dna_bytes_count) << std::endl;
-
-	uint32_t pop_size = 35;
+	uint32_t pop_size = 1;
 	Stadium stadium(pop_size, sf::Vector2f(win_width, win_height));
 	event_manager.addKeyPressedCallback(sf::Keyboard::M, [&](sfev::CstEv) { stadium.use_manual_target = !stadium.use_manual_target; window.setMouseCursorVisible(!stadium.use_manual_target); });
-
-	std::cout << "Pop size " << pop_size << std::endl;
 
 	uint32_t current_drone = 0;
 
@@ -97,28 +93,10 @@ int main()
 	std::vector<Drone>& population = stadium.selector.getCurrentPopulation();
 	stadium.initializeIteration();
 
-	for (uint32_t i(0); i < 14; ++i) {
-		const uint64_t gen = i;
-		DNA dna = DnaLoader::loadDnaFrom(dna_file_1, dna_bytes_count, gen);
-		stadium.selector.getCurrentPopulation()[i].loadDNA(dna);
-		stadium.selector.getCurrentPopulation()[i].generation = std::max(uint64_t(1), 100 * gen);
-		stadium.selector.getCurrentPopulation()[i].index = i;
-	}
-
-	for (uint32_t i(14); i < 28; ++i) {
-		const uint64_t gen = i - 14;
-		DNA dna = DnaLoader::loadDnaFrom(dna_file_2, dna_bytes_count, gen);
-		stadium.selector.getCurrentPopulation()[i].loadDNA(dna);
-		stadium.selector.getCurrentPopulation()[i].generation = 2000 + 100 * gen;
-		stadium.selector.getCurrentPopulation()[i].index = i;
-	}
-
-	for (uint32_t i(28); i < 35; ++i) {
-		const uint64_t gen = i - 28 + 20;
-		DNA dna = DnaLoader::loadDnaFrom(dna_file_3, dna_bytes_count, gen);
-		stadium.selector.getCurrentPopulation()[i].loadDNA(dna);
-		stadium.selector.getCurrentPopulation()[i].generation = 3000 + 100 * gen;
-		stadium.selector.getCurrentPopulation()[i].index = i;
+	DNA dna = DnaLoader::loadDnaFrom(dna_file_3, dna_bytes_count, 25);
+	for (Drone& d : stadium.selector.getCurrentPopulation()) {
+		d.loadDNA(dna);
+		d.generation = 5500;
 	}
 
 	if (stadium.use_manual_target) {
@@ -155,7 +133,9 @@ int main()
 			blur_target.clear();
 
 			for (Drone& d : stadium.selector.getCurrentPopulation()) {
-				drone_renderer.draw(d, window, blur_target, state, colors[d.index%colors.size()], !full_speed);
+				if (d.alive) {
+					drone_renderer.draw(d, window, blur_target, state, colors[d.index%colors.size()], !full_speed);
+				}
 			}
 
 			if (stadium.use_manual_target) {
