@@ -54,14 +54,21 @@ struct Stadium
 		const uint64_t bytes_count = Network::getParametersCount(architecture) * 4;
 		const uint64_t dna_count = DnaLoader::getDnaCount(filename, bytes_count);
 		for (uint64_t i(0); i < dna_count && i < population_size; ++i) {
-			selector.getCurrentPopulation()[i].loadDNA(DnaLoader::loadDnaFrom(filename, bytes_count, i));
+			const DNA dna = DnaLoader::loadDnaFrom(filename, bytes_count, i);
+			/*if (!i) {
+				const uint64_t element_count = dna.getElementsCount<float>();
+				for (uint64_t j(0); j < element_count; ++j) {
+					std::cout << dna.get<float>(j) << std::endl;
+				}
+			}*/
+			selector.getCurrentPopulation()[i].loadDNA(dna);
 		}
 	}
 
 	void initializeTargets()
 	{
 		// Initialize targets
-		const float border = 200.0f;
+		const float border = 0.0f;
 		for (uint32_t i(0); i < targets_count; ++i) {
 			targets[i] = sf::Vector2f(border + getRandUnder(area_size.x - 2.0f * border), border + getRandUnder(area_size.y - 2.0f * border));
 		}
@@ -111,11 +118,15 @@ struct Stadium
 		const float target_radius = 8.0f;
 		Drone& d = selector.getCurrentPopulation()[i];
 		if (d.alive) {
-			const sf::Vector2f to_target = targets[drones_state[i].id] - d.position;
+			sf::Vector2f to_target = targets[drones_state[i].id] - d.position;
+			const float to_target_dist = getLength(to_target);
+			const float max_dist = 500.0f;
+			to_target.x /= std::max(to_target_dist, max_dist);
+			to_target.y /= std::max(to_target_dist, max_dist);
 
-			std::vector<float> inputs = {
-				normalize(to_target.x, area_size.x),
-				normalize(to_target.y, area_size.y),
+			const std::vector<float> inputs = {
+				to_target.x,
+				to_target.y,
 				d.velocity.x * dt,
 				d.velocity.y * dt,
 				cos(d.angle),
@@ -128,7 +139,6 @@ struct Stadium
 			
 			// We don't want weirdos
 			const float score_factor = std::pow(cos(d.angle), 2.0f);
-			const float to_target_dist = getLength(to_target);
 
 			d.alive = checkAlive(d, 0.25f);
 
@@ -136,11 +146,11 @@ struct Stadium
 
 			// Next target if needed
 			const float target_reward_coef = score_factor * 1.0f;
-			const float target_time = 3.0f;
+			const float target_time = 0.5f;
 			if (to_target_dist < target_radius + d.radius) {
 				state.time_in += dt;
 				if (state.time_in > target_time) {
-					d.fitness += target_reward_coef * state.points / (1.0f + state.time_out + to_target_dist);
+					d.fitness += target_reward_coef * state.points / (1.0f + state.time_out + std::pow(to_target_dist, 3));
 					state.time_out = 0.0f;
 					state.id = (state.id + 1) % targets_count;
 					state.points = getLength(d.position - targets[state.id]);

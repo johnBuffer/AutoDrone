@@ -19,8 +19,8 @@ int main()
 {
 	NumberGenerator<>::initialize();
 
-	const uint32_t win_width = 1600;
-	const uint32_t win_height = 900;
+	const uint32_t win_width = 1000;
+	const uint32_t win_height = 1000;
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 4;
 	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "AutoDrone", sf::Style::Default, settings);
@@ -83,11 +83,12 @@ int main()
 	network_printer.position = sf::Vector2f(win_width - network_size.x - GUI_MARGIN, win_height - network_size.y - GUI_MARGIN);
 
 	const uint32_t pop_size = 1600;
-	Stadium stadium(pop_size, sf::Vector2f(win_width, win_height));
-	stadium.loadDnaFromFile("../selector_output_3.bin");
+	Stadium stadium(pop_size, 2.0f * sf::Vector2f(win_width, win_height));
+	stadium.loadDnaFromFile("../selector_output_4.bin");
 
 	DroneRenderer drone_renderer;
 	sf::RenderStates state;
+	state.transform.scale(0.5f, 0.5f);
 
 	sf::Clock clock;
 	while (window.isOpen()) {
@@ -114,7 +115,7 @@ int main()
 			generation_text.setString("Generation " + toString(stadium.selector.current_iteration));
 			best_score_text.setString("Score " + toString(stadium.current_iteration.best_fitness));
 			// Render
-			window.clear(/*sf::Color(191, 219, 247)*/);
+			window.clear();
 
 			window.draw(generation_text);
 			window.draw(best_score_text);
@@ -137,29 +138,16 @@ int main()
 				target_c.setFillColor(sf::Color(255, 128, 0));
 				target_c.setOrigin(target_radius, target_radius);
 				target_c.setPosition(stadium.targets[stadium.drones_state[current_drone_i].id]);
-				window.draw(target_c);
-			}
-
-			// Print Network
-			if (!full_speed && draw_neural) {
-				for (Drone& d : population) {
-					if (d.alive) {
-						network_printer.render(window, d.network);
-						break;
-					}
-				}
+				window.draw(target_c, state);
 			}
 
 			if (draw_fitness) {
 				fitness_graph.render(window);
 			}
-			//drone_renderer.draw(drone, window, colors[0]);
 
 			window.display();
 		}
 		
-		//std::cout << "Iteration time: " << clock.getElapsedTime().asMilliseconds() << "ms" << std::endl;
-
 		fitness_graph.next();
 		stadium.nextIteration();
 	}
