@@ -18,19 +18,14 @@ struct DroneRenderer
 
 	DroneRenderer()
 	{
-		flame.loadFromFile("../flame.png");
+		flame.loadFromFile("res/flame.png");
 		flame_sprite.setTexture(flame);
 		flame_sprite.setOrigin(118.0f, 67.0f);
 		flame_sprite.setScale(0.15f, 0.15f);
 
-		smoke.loadFromFile("../smoke.png");
+		smoke.loadFromFile("res/smoke.png");
 		smoke_sprite.setTexture(smoke);
 		smoke_sprite.setOrigin(126, 134);
-
-		font.loadFromFile("../font.ttf");
-		text.setFont(font);
-		text.setCharacterSize(24);
-		text.setFillColor(sf::Color::White);
 	}
 
 	void draw(const Drone::Thruster& thruster, const Drone& drone, sf::RenderTarget& target, sf::RenderTarget& blur, sf::Color color, bool right, const sf::RenderStates& state)
@@ -117,18 +112,6 @@ struct DroneRenderer
 
 	void draw(const Drone& drone, sf::RenderTarget& target, sf::RenderTarget& blur, const sf::RenderStates& state, sf::Color color = sf::Color::White, bool draw_smoke = true)
 	{
-		/*text.setFillColor(sf::Color::White);
-		text.setString("Gen " + toString(drone.generation));
-		text.setOrigin(text.getGlobalBounds().width * 0.5f, 60);
-		text.setPosition(drone.position);
-		target.draw(text);
-
-		text.setString(toString(drone.total_time, 1) + "s");
-		text.setFillColor(sf::Color(255, 128, 0));
-		text.setOrigin(text.getGlobalBounds().width * 0.5f, 90);
-		text.setPosition(drone.position);
-		target.draw(text);*/
-
 		// Draw body
 		const float drone_width = drone.radius + drone.thruster_offset;
 		sf::RectangleShape lat(sf::Vector2f(2.0f * drone_width, 6.0f));

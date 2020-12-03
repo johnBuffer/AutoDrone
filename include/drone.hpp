@@ -83,12 +83,17 @@ struct Drone : public AiUnit
 			return max_power;
 		}
 
+		void setMaxPower(float p)
+		{
+			max_power = p;
+		}
+
 		Thruster()
 			: angle(0.0f)
 			, target_angle(0.0f)
 			, angle_var_speed(2.0f)
 			, max_angle(0.5f * PI)
-			, max_power(1700.0f)
+			, max_power(1500.0f)
 			, power_mean(10)
 		{}
 
@@ -112,6 +117,7 @@ struct Drone : public AiUnit
 	uint32_t collected;
 	uint32_t index;
 	float total_time;
+	sf::Vector2f gravity;
 	bool done;
 
 	Drone()
@@ -196,7 +202,6 @@ struct Drone : public AiUnit
 	{
 		left.update(dt);
 		right.update(dt);
-		const sf::Vector2f gravity(0.0f, 1000.0f);
 		// Integration
 		velocity += (gravity + getThrust()) * dt;
 		position += velocity * dt;

@@ -91,33 +91,17 @@ struct Stadium
 
 	void updateDrone(uint32_t i, float dt, bool update_smoke)
 	{
-		const float target_radius = 8.0f;
+		const float target_radius = 16.0f;
 		Drone& d = selector.getCurrentPopulation()[i];
 		if (d.alive) {
 			sf::Vector2f current_target = manual_target;
 
-			sf::Vector2f standby_target;
-			const float border = 50.0f;
-			const float v_border = 120.0f;
-			const uint32_t row_size = 7;
-			const float width = (area_size.x - 2.0 * border) / float(row_size);
-			const uint32_t effective_index = d.index;
-			standby_target.x = border + (effective_index % row_size + 0.5f) * width;
-			standby_target.y = v_border + (effective_index / row_size) * 150;
-
+			const sf::Vector2f standby_target = area_size * 0.5f;
 
 			if (!use_manual_target) {
 				current_target = standby_target;
 			}
-			else {
-				if (d.index > 0) {
-					sf::Vector2f center_to_standby = standby_target - area_size * 0.5f;
-					const float dist = getLength(center_to_standby);
-					center_to_standby /= dist;
-					current_target = area_size * 0.5f + center_to_standby * 1100.0f;
-				}
-			}
-
+			
 			const sf::Vector2f to_target = current_target - d.position;
 			float to_x = normalize(to_target.x, area_size.x);
 			float to_y = normalize(to_target.y, area_size.y);
@@ -144,7 +128,7 @@ struct Stadium
 			d.execute(inputs);
 			d.update(dt, update_smoke);
 			
-			d.alive = checkAlive(d, 1.5f);
+			d.alive = checkAlive(d, 0.25f);
 		}
 	}
 
