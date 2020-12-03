@@ -52,9 +52,6 @@ struct Stadium
 	{
 		// Initialize targets
 		const float border = 150.0f;
-		for (uint32_t i(300); i--;) {
-			getRandUnder(1.0f);
-		}
 		for (uint32_t i(0); i < targets_count; ++i) {
 			targets[i] = sf::Vector2f(border + getRandUnder(area_size.x - 2.0f * border), border + getRandUnder(area_size.y - 2.0f * border));
 		}
@@ -104,7 +101,11 @@ struct Stadium
 		const float target_radius = 8.0f;
 		Drone& d = selector.getCurrentPopulation()[i];
 		if (d.alive) {
-			sf::Vector2f current_target = use_manual_target ? manual_target : targets[drones_state[i].id];
+			sf::Vector2f current_target = manual_target;
+			if (!use_manual_target) {
+				current_target = area_size * 0.5f;
+			}
+
 			if (d.collected == targets_count && !use_manual_target) {
 				const float border = 50.0f;
 				const float v_border = 120.0f;
@@ -136,28 +137,6 @@ struct Stadium
 			const float to_target_dist = getLength(to_target);
 
 			d.alive = checkAlive(d, 0.5f);
-
-			TargetState& state = drones_state[i];
-
-			d.done = d.collected == targets_count;
-
-			// Next target if needed
-			const float target_time = 3.0f;
-			if (to_target_dist < target_radius + d.radius && !use_manual_target) {
-				state.time_in += dt;
-				if (state.time_in > target_time) {
-					if (d.collected < targets_count) {
-						state.time_out = 0.0f;
-						state.id = (state.id + 1) % targets_count;
-						state.points = getLength(d.position - targets[state.id]);
-						++d.collected;
-					}
-				}
-			}
-			else {
-				state.time_out += dt;
-				state.time_in = 0.0f;
-			}
 		}
 	}
 

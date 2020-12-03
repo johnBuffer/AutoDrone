@@ -93,18 +93,6 @@ int main()
 
 	uint32_t current_drone = 0;
 
-	sf::Font font;
-	font.loadFromFile("../inconsolata.ttf");
-	sf::Text text;
-	text.setFont(font);
-	text.setCharacterSize(24);
-	text.setFillColor(sf::Color::White);
-	text.setPosition(2.0f * GUI_MARGIN, GUI_MARGIN);
-
-	std::string logs = format(" Gen", 6) + char(124) + format(" Time (s)", 18) + "|" + format(" Collected", 10);
-	logs += "\n" + format("", logs.size() + 1, '_');
-	logs += "\n";
-
 	// Initialize drones
 	std::vector<Drone>& population = stadium.selector.getCurrentPopulation();
 	stadium.initializeIteration();
@@ -139,24 +127,16 @@ int main()
 		stadium.manual_target.y = mouse_pos.y;
 	}
 
-	std::vector<int32_t> drones_id{0, 1, 2, 5, 10, 20, 25, 33};
-
 	sf::Clock clock;
 	while (window.isOpen()) {
 		event_manager.processEvents();
 
 		stadium.current_iteration.time = 0.0f;
 
-		const uint32_t drone_id = drones_id[current_drone % drones_id.size()];
-		Drone& drone = stadium.selector.getCurrentPopulation()[drone_id];
+		stadium.initializeDrones();
 
-		text.setString(logs);
-
-		while (drone.alive &&
-			!drone.done &&
-			window.isOpen() &&
-			stadium.current_iteration.time < 100.0f ||
-			current_drone == drones_id.size())
+		while (stadium.getAliveCount(),
+			window.isOpen())
 		{
 			event_manager.processEvents();
 			
@@ -168,32 +148,24 @@ int main()
 				stadium.manual_target.y = mouse_pos.y;
 			}
 
-			if (clock.getElapsedTime().asSeconds() > 5.0f) {
-				stadium.updateDrone(drone_id, dt, true);
-			}
+			stadium.update(dt, true);
 
 			// Render
 			window.clear();
 			blur_target.clear();
 
-			window.draw(text);
+			for (Drone& d : stadium.selector.getCurrentPopulation()) {
+				drone_renderer.draw(d, window, blur_target, state, colors[d.index%colors.size()], !full_speed);
+			}
 
-			if (current_drone < drones_id.size() && clock.getElapsedTime().asSeconds() > 5.0f) {
-				drone_renderer.draw(drone, window, blur_target, state, colors[drone_id%colors.size()], !full_speed);
-
+			if (stadium.use_manual_target) {
 				sf::CircleShape target_c(target_radius);
 				target_c.setFillColor(sf::Color(255, 128, 0));
 				target_c.setOrigin(target_radius, target_radius);
-				target_c.setPosition(stadium.targets[stadium.drones_state[drone_id].id]);
+				target_c.setPosition(stadium.manual_target);
 				window.draw(target_c);
 				target_c.setFillColor(sf::Color::Black);
 				blur_target.draw(target_c);
-
-				// Print Network
-
-				if (draw_neural) {
-					network_printer.render(window, drone.network);
-				}
 			}
 
 			if (draw_fitness) {
@@ -207,16 +179,6 @@ int main()
 
 			window.display();
 		}
-
-		std::string dead = "[COMPLETE]";
-		if (!drone.alive) {
-			dead = "[CRASH]";
-		}
-		else if (stadium.current_iteration.time >= 100.0f) {
-			dead = "[TIME OUT]";
-		}
-
-		logs += "\n" + format(" " + toString(drone.generation), 6) + "|" + format(" " + toString(drone.total_time, 1), 6) + format(" " + dead, 12) + "|" + format(" " + toString(drone.collected), 3, ' ', true) + " / " + toString(stadium.targets_count);
 
 		++current_drone;
 	}
