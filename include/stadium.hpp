@@ -61,16 +61,9 @@ struct Stadium
 	{
 		// Initialize targets
 		auto& drones = selector.getCurrentPopulation();
-		uint32_t current_drone_i = 0;
 		for (Drone& d : drones) {
-			TargetState& state = drones_state[current_drone_i];
-			state.id = 0;
-			state.time_in = 0.0f;
-			state.time_out = 0.0f;
-			d.position = sf::Vector2f(area_size.x * 0.5f, area_size.y * 0.5f);
-			state.points = getLength(d.position - targets[0]);
+			d.position = area_size * 0.5f;
 			d.reset();
-			++current_drone_i;
 		}
 	}
 
@@ -82,7 +75,7 @@ struct Stadium
 			&& drone.position.y > -tolerance * area_size.y
 			&& drone.position.y < (1.0f + tolerance) * area_size.y;
 
-		return in_window/* && std::abs(drone.angle) < PI*/;
+		return in_window && std::abs(drone.angle) < PI;
 	}
 
 	uint32_t getAliveCount() const
@@ -107,10 +100,21 @@ struct Stadium
 			}
 
 			const sf::Vector2f to_target = current_target - d.position;
+			float to_x = normalize(to_target.x, area_size.x);
+			float to_y = normalize(to_target.y, area_size.y);
+
+			const float max_to_target = 0.25f;
+
+			if (std::abs(to_x) > max_to_target) {
+				to_x = sign(to_x) * max_to_target;
+			}
+			if (std::abs(to_y) > max_to_target) {
+				to_y = sign(to_y) * max_to_target;
+			}
 
 			std::vector<float> inputs = {
-				normalize(to_target.x, area_size.x),
-				normalize(to_target.y, area_size.y),
+				to_x,
+				to_y,
 				d.velocity.x * dt,
 				d.velocity.y * dt,
 				cos(d.angle),

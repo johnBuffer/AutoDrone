@@ -25,7 +25,7 @@ int main()
 	const uint32_t win_height = 900;
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 4;
-	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "AutoDrone", sf::Style::Fullscreen, settings);
+	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "AutoDrone", sf::Style::Default, settings);
 	window.setVerticalSyncEnabled(true);
 
 	Blur blur(win_width, win_height, 1.0f);
@@ -93,7 +93,9 @@ int main()
 	std::vector<Drone>& population = stadium.selector.getCurrentPopulation();
 	stadium.initializeIteration();
 
-	DNA dna = DnaLoader::loadDnaFrom(dna_file_3, dna_bytes_count, 25);
+	std::cout << DnaLoader::getDnaCount(dna_file_3, dna_bytes_count) << std::endl;
+
+	DNA dna = DnaLoader::loadDnaFrom(dna_file_3, dna_bytes_count, 52);
 	for (Drone& d : stadium.selector.getCurrentPopulation()) {
 		d.loadDNA(dna);
 		d.generation = 5500;
@@ -113,8 +115,10 @@ int main()
 
 		stadium.initializeDrones();
 
-		while (stadium.getAliveCount(),
-			window.isOpen())
+		while (
+			stadium.getAliveCount() &&
+			window.isOpen()
+			)
 		{
 			event_manager.processEvents();
 			
@@ -148,19 +152,12 @@ int main()
 				blur_target.draw(target_c);
 			}
 
-			if (draw_fitness) {
-				fitness_graph.render(window);
-			}
-
 			blur_target.display();
 			sf::Sprite bloom_sprite = blur.apply(blur_target.getTexture(), 2);
-
 			window.draw(bloom_sprite, sf::BlendAdd);
 
 			window.display();
 		}
-
-		++current_drone;
 	}
 
 	return 0;
