@@ -1,7 +1,6 @@
 #pragma once
 #include "dna_utils.hpp"
 #include "neural_network.hpp"
-#include "game.hpp"
 #include "selection_wheel.hpp"
 #include "unit.hpp"
 #include "double_buffer.hpp"

@@ -1,10 +1,7 @@
 #include <SFML/Graphics.hpp>
-#include <vector>
-#include <list>
 #include <event_manager.hpp>
 #include <iostream>
 
-#include "game.hpp"
 #include "dna.hpp"
 #include "selector.hpp"
 #include "number_generator.hpp"
