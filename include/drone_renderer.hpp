@@ -2,8 +2,6 @@
 #include <SFML/Graphics.hpp>
 #include "drone.hpp"
 
-constexpr float RAD_TO_DEG = 57.2958f;
-
 
 struct DroneRenderer
 {
@@ -76,7 +74,7 @@ struct DroneRenderer
 		// Draw flame
 		const float rand_pulse_left = (1.0f + rand() % 10 * 0.05f);
 		const float v_scale_left = thruster.power_ratio * rand_pulse_left;
-		flame_sprite.setPosition(position + 0.5f * thruster_height * sf::Vector2f(ca_left, sa_left));
+		flame_sprite.setPosition(position + 0.5f * thruster_height * thruster_dir);
 		flame_sprite.setScale(0.15f * thruster.power_ratio * rand_pulse_left, 0.15f * v_scale_left);
 		flame_sprite.setRotation(RAD_TO_DEG * angle);
 		target.draw(flame_sprite, state);

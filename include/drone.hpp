@@ -64,6 +64,7 @@ struct Drone : public AiUnit
 	sf::Vector2f velocity;
 	float angle;
 	float angular_velocity;
+	uint32_t index;
 
 	Drone()
 		: AiUnit(architecture)

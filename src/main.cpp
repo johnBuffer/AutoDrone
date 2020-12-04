@@ -19,8 +19,8 @@ int main()
 {
 	NumberGenerator<>::initialize();
 
-	const uint32_t win_width = 1000;
-	const uint32_t win_height = 1000;
+	const uint32_t win_width = 1920;
+	const uint32_t win_height = 1080;
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 4;
 	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "AutoDrone", sf::Style::Default, settings);
@@ -34,6 +34,7 @@ int main()
 	event_manager.addEventCallback(sf::Event::Closed, [&](sfev::CstEv ev) { window.close(); });
 	event_manager.addKeyPressedCallback(sf::Keyboard::Escape, [&](sfev::CstEv ev) { window.close(); });
 
+	// The drones colors
 	std::vector<sf::Color> colors({ sf::Color(36, 123, 160),
 									sf::Color(161, 88, 86),
 									sf::Color(249, 160, 97),
@@ -78,13 +79,9 @@ int main()
 	best_score_text.setCharacterSize(32);
 	best_score_text.setPosition(4.0f * GUI_MARGIN, 64);
 	
-	NeuralRenderer network_printer;
-	const sf::Vector2f network_size = network_printer.getSize(4, 9);
-	network_printer.position = sf::Vector2f(win_width - network_size.x - GUI_MARGIN, win_height - network_size.y - GUI_MARGIN);
-
 	const uint32_t pop_size = 1600;
 	Stadium stadium(pop_size, 2.0f * sf::Vector2f(win_width, win_height));
-	stadium.loadDnaFromFile("../selector_output_4.bin");
+	stadium.loadDnaFromFile("../selector_output_5.bin");
 
 	DroneRenderer drone_renderer;
 	sf::RenderStates state;
@@ -114,9 +111,9 @@ int main()
 			fitness_graph.setLastValue(stadium.current_iteration.best_fitness);
 			generation_text.setString("Generation " + toString(stadium.selector.current_iteration));
 			best_score_text.setString("Score " + toString(stadium.current_iteration.best_fitness));
+
 			// Render
 			window.clear();
-
 			window.draw(generation_text);
 			window.draw(best_score_text);
 
@@ -124,12 +121,12 @@ int main()
 			if (draw_drones) {
 				for (Drone& d : population) {
 					if (d.alive) {
-						drone_renderer.draw(d, window, state, colors[current_drone_i%colors.size()], !full_speed && show_just_one);
+						drone_renderer.draw(d, window, state, colors[d.index%colors.size()], !full_speed && show_just_one);
 						if (show_just_one) {
+							current_drone_i = d.index;
 							break;
 						}
 					}
-					++current_drone_i;
 				}
 			}
 			
@@ -137,7 +134,7 @@ int main()
 				sf::CircleShape target_c(target_radius);
 				target_c.setFillColor(sf::Color(255, 128, 0));
 				target_c.setOrigin(target_radius, target_radius);
-				target_c.setPosition(stadium.targets[stadium.drones_state[current_drone_i].id]);
+				target_c.setPosition(stadium.targets[stadium.objectives[current_drone_i].target_id]);
 				window.draw(target_c, state);
 			}
 
