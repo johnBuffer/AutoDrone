@@ -132,14 +132,13 @@ struct Stadium
 		d.execute(inputs);
 		d.update(dt, update_smoke);
 		d.alive = checkAlive(d, tolerance_margin);
-			
 
 		// Fitness stuffs
 		d.fitness += 0.1f / to_target_dist;
 		// We don't want weirdos
 		const float score_factor = std::pow(cos(d.angle), 2.0f);
 		const float target_reward_coef = score_factor * 10.0f;
-		const float target_time = 0.5f;
+		const float target_time = 3.0f;
 		if (to_target_dist < target_radius + d.radius) {
 			objective.addTimeIn(dt);
 			if (objective.time_in > target_time) {
