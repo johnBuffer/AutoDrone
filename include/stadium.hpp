@@ -38,6 +38,7 @@ struct Stadium
 	Iteration current_iteration;
 	swrm::Swarm swarm;
 
+
 	Stadium(uint32_t population, sf::Vector2f size)
 		: population_size(population)
 		, selector(population)
