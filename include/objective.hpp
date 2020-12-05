@@ -22,7 +22,7 @@ struct Objective
 	}
 
 	template<typename T>
-	const T& getTarget(const std::vector<T>& targets)
+	const T& getTarget(const std::vector<T>& targets) const
 	{
 		return targets[target_id];
 	}

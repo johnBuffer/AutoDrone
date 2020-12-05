@@ -78,7 +78,7 @@ int main()
 	
 	const uint32_t pop_size = 1600;
 	Stadium stadium(pop_size, 2.0f * sf::Vector2f(win_width, win_height));
-	stadium.loadDnaFromFile("../selector_output_7.bin");
+	//stadium.loadDnaFromFile("../selector_output_8.bin");
 
 	DroneRenderer drone_renderer;
 	sf::RenderStates state;
@@ -116,12 +116,14 @@ int main()
 
 			uint32_t current_drone_i = 0;
 			if (draw_drones) {
-				for (Drone& d : population) {
-					if (d.alive) {
-						drone_renderer.draw(d, window, state, colors[d.index%colors.size()], !full_speed && show_just_one);
-						if (show_just_one) {
-							current_drone_i = d.index;
-							break;
+				if (show_just_one) {
+					const Drone& d = stadium.selector.getCurrentPopulation()[stadium.current_iteration.best_unit];
+					drone_renderer.draw(d, window, state, colors[d.index%colors.size()], !full_speed);
+				}
+				else {
+					for (Drone& d : population) {
+						if (d.alive) {
+							drone_renderer.draw(d, window, state, colors[d.index%colors.size()], false);
 						}
 					}
 				}
@@ -131,7 +133,7 @@ int main()
 				sf::CircleShape target_c(target_radius);
 				target_c.setFillColor(sf::Color(255, 128, 0));
 				target_c.setOrigin(target_radius, target_radius);
-				target_c.setPosition(stadium.targets[stadium.objectives[current_drone_i].target_id]);
+				target_c.setPosition(stadium.targets[stadium.objectives[stadium.current_iteration.best_unit].target_id]);
 				window.draw(target_c, state);
 			}
 
@@ -141,6 +143,8 @@ int main()
 
 			window.display();
 		}
+
+		stadium.finalizeFitness();
 		
 		fitness_graph.next();
 		stadium.nextIteration();

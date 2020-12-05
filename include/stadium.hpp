@@ -13,11 +13,13 @@ struct Stadium
 	{
 		float time;
 		float best_fitness;
+		uint32_t best_unit;
 
 		void reset()
 		{
 			time = 0.0f;
 			best_fitness = 0.0f;
+			best_unit = 0;
 		}
 	};
 
@@ -54,9 +56,19 @@ struct Stadium
 	void initializeTargets()
 	{
 		// Initialize targets
-		const float border = 0.0f;
+		const float border = 200.0f;
 		for (uint32_t i(0); i < targets_count; ++i) {
 			targets[i] = sf::Vector2f(border + getRandUnder(area_size.x - 2.0f * border), border + getRandUnder(area_size.y - 2.0f * border));
+		}
+	}
+
+	void finalizeFitness()
+	{
+		for (Drone& d : selector.getCurrentPopulation()) {
+			const Objective& current_objective = objectives[d.index];
+			const float dist = getLength(d.position - current_objective.getTarget(targets));
+			const float points = current_objective.points - dist;
+			d.fitness += points / (1.0f + current_objective.time_out);
 		}
 	}
 
@@ -102,7 +114,7 @@ struct Stadium
 		}
 
 		const float target_radius = 8.0f;
-		const float max_dist = 500.0f;
+		const float max_dist = 1000.0f;
 		const float tolerance_margin = 50.0f;
 		
 		Objective& objective = objectives[d.index];
@@ -127,7 +139,7 @@ struct Stadium
 		d.alive = checkAlive(d, tolerance_margin);
 
 		// Fitness stuffs
-		//d.fitness += 0.1f / to_target_dist;
+		d.fitness += 1.0f / to_target_dist;
 		// We don't want weirdos
 		const float score_factor = std::pow(cos(d.angle), 2.0f);
 		const float target_time = 3.0f;
@@ -143,12 +155,15 @@ struct Stadium
 			objective.addTimeOut(dt);
 		}
 
-		checkBestFitness(d.fitness);
+		checkBestFitness(d.fitness, d.index);
 	}
 
-	void checkBestFitness(float fitness)
+	void checkBestFitness(float fitness, uint32_t id)
 	{
-		current_iteration.best_fitness = std::max(fitness, current_iteration.best_fitness);
+		if (fitness > current_iteration.best_fitness) {
+			current_iteration.best_fitness = fitness;
+			current_iteration.best_unit = id;
+		}
 	}
 
 	void update(float dt, bool update_smoke)
