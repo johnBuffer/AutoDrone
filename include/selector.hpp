@@ -22,7 +22,7 @@ struct Selector
 	DoubleObject<std::vector<T>> population;
 	SelectionWheel wheel;
 	std::string out_file;
-	uint32_t dump_frequency = 100;
+	uint32_t dump_frequency = 10;
 	uint32_t current_iteration;
 
 	Selector(const uint32_t agents_count)
@@ -72,7 +72,7 @@ struct Selector
 		for (uint32_t i(elites_count); i < population_size; ++i) {
 			const T& unit_1 = wheel.pick(current_units);
 			const T& unit_2 = wheel.pick(current_units);
-			const float mutation_proba = 0.05f;
+			const float mutation_proba = 1.0 / std::max(1.0f, log2(0.5f * (unit_1.fitness + unit_2.fitness)));
 			if (unit_1.dna == unit_2.dna) {
 				++evolve_count;
 				next_units[i].loadDNA(DNAUtils::evolve<float>(unit_1.dna, mutation_proba, mutation_proba));

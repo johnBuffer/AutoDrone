@@ -68,7 +68,7 @@ struct Stadium
 			const Objective& current_objective = objectives[d.index];
 			const float dist = getLength(d.position - current_objective.getTarget(targets));
 			const float points = current_objective.points - dist;
-			d.fitness += points / (1.0f + current_objective.time_out);
+			d.fitness += std::max(0.0f, points / (1.0f + current_objective.time_out));
 		}
 	}
 
@@ -139,7 +139,7 @@ struct Stadium
 		d.alive = checkAlive(d, tolerance_margin);
 
 		// Fitness stuffs
-		d.fitness += 1.0f / to_target_dist;
+		//d.fitness += 1.0f / to_target_dist;
 		// We don't want weirdos
 		const float score_factor = std::pow(cos(d.angle), 2.0f);
 		const float target_time = 3.0f;
