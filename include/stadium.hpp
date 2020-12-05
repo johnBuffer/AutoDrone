@@ -39,15 +39,6 @@ struct Stadium
 		, area_size(size)
 		, swarm(4)
 	{
-		uint32_t i(0);
-		for (Drone& d : selector.getCurrentPopulation()) {
-			d.index = i++;
-		}
-
-		i = 0;
-		for (Drone& d : selector.getNextPopulation()) {
-			d.index = i++;
-		}
 	}
 
 	void loadDnaFromFile(const std::string& filename)
@@ -73,7 +64,9 @@ struct Stadium
 	{
 		// Initialize targets
 		auto& drones = selector.getCurrentPopulation();
+		uint32_t i = 0;
 		for (Drone& d : drones) {
+			d.index = i++;
 			Objective& objective = objectives[d.index];
 			d.position = 0.5f * area_size;
 			objective.reset();
