@@ -8,6 +8,8 @@
 
 constexpr float PI = 3.14159265f;
 constexpr float HalfPI = PI * 0.5f;
+constexpr float RAD_TO_DEG = 57.2958f;
+
 
 
 void resetRand();

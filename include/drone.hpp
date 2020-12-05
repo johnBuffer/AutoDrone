@@ -45,7 +45,7 @@ struct Drone : public AiUnit
 			, target_angle(0.0f)
 			, angle_var_speed(2.0f)
 			, max_angle(0.5f * PI)
-			, max_power(2500.0f)
+			, max_power(1700.0f)
 
 		{}
 
@@ -64,6 +64,7 @@ struct Drone : public AiUnit
 	sf::Vector2f velocity;
 	float angle;
 	float angular_velocity;
+	uint32_t index;
 
 	Drone()
 		: AiUnit(architecture)
@@ -157,8 +158,8 @@ struct Drone : public AiUnit
 	void process(const std::vector<float>& outputs) override
 	{
 		left.setPower(0.5f * (outputs[0] + 1.0f));
-		left.setAngle(2.0f * outputs[1]);
+		left.setAngle(outputs[1]);
 		right.setPower(0.5f * (outputs[2] + 1.0f));
-		right.setAngle(2.0f * outputs[3]);
+		right.setAngle(outputs[3]);
 	}
 };
