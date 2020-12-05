@@ -158,8 +158,8 @@ struct Drone : public AiUnit
 	void process(const std::vector<float>& outputs) override
 	{
 		left.setPower(0.5f * (outputs[0] + 1.0f));
-		left.setAngle(2.0f * outputs[1]);
+		left.setAngle(outputs[1]);
 		right.setPower(0.5f * (outputs[2] + 1.0f));
-		right.setAngle(2.0f * outputs[3]);
+		right.setAngle(outputs[3]);
 	}
 };

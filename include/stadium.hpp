@@ -134,15 +134,14 @@ struct Stadium
 		d.alive = checkAlive(d, tolerance_margin);
 
 		// Fitness stuffs
-		d.fitness += 0.1f / to_target_dist;
+		//d.fitness += 0.1f / to_target_dist;
 		// We don't want weirdos
 		const float score_factor = std::pow(cos(d.angle), 2.0f);
-		const float target_reward_coef = score_factor * 10.0f;
 		const float target_time = 3.0f;
 		if (to_target_dist < target_radius + d.radius) {
 			objective.addTimeIn(dt);
 			if (objective.time_in > target_time) {
-				d.fitness += target_reward_coef * objective.points / (1.0f + objective.time_out + std::pow(to_target_dist, 2));
+				d.fitness += score_factor * objective.points / (1.0f + objective.time_out);
 				objective.nextTarget(targets);
 				objective.points = getLength(d.position - objective.getTarget(targets));
 			}
