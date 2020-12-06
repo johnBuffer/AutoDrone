@@ -12,12 +12,14 @@ struct Stadium
 	struct Iteration
 	{
 		float time;
+		float global_target_time;
 		float best_fitness;
 		uint32_t best_unit;
 
 		void reset()
 		{
 			time = 0.0f;
+			global_target_time = 0.0f;
 			best_fitness = 0.0f;
 			best_unit = 0;
 		}
@@ -31,15 +33,18 @@ struct Stadium
 	sf::Vector2f area_size;
 	Iteration current_iteration;
 	swrm::Swarm swarm;
+	uint32_t current_global_target;
+	float target_time;
 
 	Stadium(uint32_t population, sf::Vector2f size)
 		: population_size(population)
 		, selector(population)
-		, targets_count(10)
+		, targets_count(50)
 		, targets(targets_count)
 		, objectives(population)
 		, area_size(size)
 		, swarm(8)
+		, target_time(4.0f)
 	{
 	}
 
@@ -117,8 +122,7 @@ struct Stadium
 		const float max_dist = 700.0f;
 		const float tolerance_margin = 50.0f;
 		
-		Objective& objective = objectives[d.index];
-		sf::Vector2f to_target = objective.getTarget(targets) - d.position;
+		sf::Vector2f to_target = targets[current_global_target] - d.position;
 		const float to_target_dist = getLength(to_target);
 		to_target.x /= std::max(to_target_dist, max_dist);
 		to_target.y /= std::max(to_target_dist, max_dist);
@@ -136,23 +140,17 @@ struct Stadium
 		// The actual update
 		d.execute(inputs);
 		d.update(dt, update_smoke);
-		d.alive = checkAlive(d, tolerance_margin);
+		const float out_time_threshold = 3.5f;
+		d.alive = checkAlive(d, tolerance_margin) && (objectives[i].time_out < out_time_threshold);
 
 		// Fitness stuffs
-		//d.fitness += 1.0f / to_target_dist;
 		// We don't want weirdos
 		const float score_factor = std::pow(cos(d.angle), 2.0f);
-		const float target_time = 1.0f;
-		if (to_target_dist < target_radius + d.radius) {
-			objective.addTimeIn(dt);
-			if (objective.time_in > target_time) {
-				d.fitness += score_factor * objective.points / (1.0f + objective.time_out);
-				objective.nextTarget(targets);
-				objective.points = getLength(d.position - objective.getTarget(targets));
-			}
-		}
-		else {
-			objective.addTimeOut(dt);
+		d.fitness += target_radius / to_target_dist;
+
+		const float out_threshold = 200.0f;
+		if (to_target_dist > out_threshold) {
+			objectives[i].time_out += dt;
 		}
 
 		checkBestFitness(d.fitness, d.index);
@@ -176,7 +174,17 @@ struct Stadium
 			}
 		});
 		group_update.waitExecutionDone();
+
 		current_iteration.time += dt;
+		current_iteration.global_target_time += dt;
+		if (current_iteration.global_target_time > target_time) {
+			target_time = 1.0f + getRandUnder(3.0f);
+			current_iteration.global_target_time = 0.0f;
+			current_global_target = (current_global_target + 1) % targets_count;
+			for (Objective& o : objectives) {
+				o.time_out = 0.0f;
+			}
+		}
 	}
 
 	void initializeIteration()
@@ -184,6 +192,7 @@ struct Stadium
 		initializeTargets();
 		initializeDrones();
 		current_iteration.reset();
+		current_global_target = 0;
 	}
 
 	void nextIteration()

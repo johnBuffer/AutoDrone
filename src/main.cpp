@@ -60,7 +60,7 @@ int main()
 	event_manager.addKeyPressedCallback(sf::Keyboard::F, [&](sfev::CstEv ev) { draw_fitness = !draw_fitness; });
 
 	const float GUI_MARGIN = 10.0f;
-	Graphic fitness_graph(1000, sf::Vector2f(700, 120), sf::Vector2f(GUI_MARGIN, win_height - 120 - GUI_MARGIN));
+	Graphic fitness_graph(4000, sf::Vector2f(1920, 120), sf::Vector2f(GUI_MARGIN, win_height - 120 - GUI_MARGIN));
 	fitness_graph.color = sf::Color(96, 211, 148);
 
 	sf::Font font;
@@ -76,10 +76,10 @@ int main()
 	best_score_text.setCharacterSize(32);
 	best_score_text.setPosition(4.0f * GUI_MARGIN, 64);
 	
-	const uint32_t pop_size = 3200;
+	const uint32_t pop_size = 800;
 	const float scale = 2.0f;
 	Stadium stadium(pop_size, scale * sf::Vector2f(win_width, win_height));
-	stadium.loadDnaFromFile("../selector_output_6.bin");
+	stadium.loadDnaFromFile("../selector_output_15.bin");
 
 	DroneRenderer drone_renderer;
 	sf::RenderStates state;
@@ -130,13 +130,11 @@ int main()
 				}
 			}
 			
-			if (show_just_one) {
-				sf::CircleShape target_c(target_radius);
-				target_c.setFillColor(sf::Color(255, 128, 0));
-				target_c.setOrigin(target_radius, target_radius);
-				target_c.setPosition(stadium.targets[stadium.objectives[stadium.current_iteration.best_unit].target_id]);
-				window.draw(target_c, state);
-			}
+			sf::CircleShape target_c(target_radius);
+			target_c.setFillColor(sf::Color(255, 128, 0));
+			target_c.setOrigin(target_radius, target_radius);
+			target_c.setPosition(stadium.targets[stadium.current_global_target]);
+			window.draw(target_c, state);
 
 			if (draw_fitness) {
 				fitness_graph.render(window);
