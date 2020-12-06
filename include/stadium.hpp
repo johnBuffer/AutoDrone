@@ -39,7 +39,7 @@ struct Stadium
 		, targets(targets_count)
 		, objectives(population)
 		, area_size(size)
-		, swarm(4)
+		, swarm(8)
 	{
 	}
 
@@ -114,7 +114,7 @@ struct Stadium
 		}
 
 		const float target_radius = 8.0f;
-		const float max_dist = 1000.0f;
+		const float max_dist = 700.0f;
 		const float tolerance_margin = 50.0f;
 		
 		Objective& objective = objectives[d.index];
@@ -139,10 +139,10 @@ struct Stadium
 		d.alive = checkAlive(d, tolerance_margin);
 
 		// Fitness stuffs
-		d.fitness += 1.0f / to_target_dist;
+		//d.fitness += 1.0f / to_target_dist;
 		// We don't want weirdos
 		const float score_factor = std::pow(cos(d.angle), 2.0f);
-		const float target_time = 3.0f;
+		const float target_time = 1.0f;
 		if (to_target_dist < target_radius + d.radius) {
 			objective.addTimeIn(dt);
 			if (objective.time_in > target_time) {

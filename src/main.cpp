@@ -76,13 +76,14 @@ int main()
 	best_score_text.setCharacterSize(32);
 	best_score_text.setPosition(4.0f * GUI_MARGIN, 64);
 	
-	const uint32_t pop_size = 1600;
-	Stadium stadium(pop_size, 2.0f * sf::Vector2f(win_width, win_height));
-	//stadium.loadDnaFromFile("../selector_output_8.bin");
+	const uint32_t pop_size = 3200;
+	const float scale = 2.0f;
+	Stadium stadium(pop_size, scale * sf::Vector2f(win_width, win_height));
+	stadium.loadDnaFromFile("../selector_output_6.bin");
 
 	DroneRenderer drone_renderer;
 	sf::RenderStates state;
-	state.transform.scale(0.5f, 0.5f);
+	state.transform.scale(1.0f / scale, 1.0f / scale);
 
 	sf::Clock clock;
 	while (window.isOpen()) {
