@@ -79,7 +79,7 @@ int main()
 	const uint32_t pop_size = 3200;
 	const float scale = 2.0f;
 	Stadium stadium(pop_size, scale * sf::Vector2f(win_width, win_height));
-	stadium.loadDnaFromFile("../selector_output_6.bin");
+	stadium.loadDnaFromFile("../selector_output_18.bin");
 
 	DroneRenderer drone_renderer;
 	sf::RenderStates state;

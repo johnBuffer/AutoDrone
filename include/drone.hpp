@@ -45,7 +45,7 @@ struct Drone : public AiUnit
 			, target_angle(0.0f)
 			, angle_var_speed(2.0f)
 			, max_angle(0.5f * PI)
-			, max_power(1700.0f)
+			, max_power(3500.0f)
 
 		{}
 
