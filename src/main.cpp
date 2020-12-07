@@ -84,7 +84,7 @@ int main()
 
 	const uint64_t dna_bytes_count = Network::getParametersCount(architecture) * 4;
 
-	uint32_t pop_size = 1;
+	uint32_t pop_size = 42;
 	Stadium stadium(pop_size, sf::Vector2f(win_width, win_height));
 	event_manager.addKeyPressedCallback(sf::Keyboard::M, [&](sfev::CstEv) { stadium.use_manual_target = !stadium.use_manual_target; });
 
@@ -134,8 +134,8 @@ int main()
 		         6, 101, 180, 191, 57, 77, 26, 193, 32, 152, 17, 192
 	};*/
 
-	DNA dna = DnaLoader::loadDnaFrom("../selector_output_7.bin", dna_bytes_count, 440);
-	std::cout << DnaLoader::getDnaCount("../selector_output_7.bin", dna_bytes_count) << std::endl;
+	DNA dna = DnaLoader::loadDnaFrom("../robusts_7_9_9_2.bin", dna_bytes_count, 440);
+	std::cout << DnaLoader::getDnaCount("../robusts_7_9_9_2.bin", dna_bytes_count) << std::endl;
 
 	for (Drone& d : stadium.selector.getCurrentPopulation()) {
 		d.loadDNA(dna);
