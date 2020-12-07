@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <iostream>
-#include <bitset>
+#include "number_generator.hpp"
 
 
 constexpr float MAX_RANGE = 10.0f;
@@ -52,14 +52,6 @@ struct DNA
 	uint64_t getElementsCount() const
 	{
 		return code.size() / sizeof(T);
-	}
-
-	void print() const
-	{
-		for (const byte word : code) {
-			std::cout << std::bitset<8>(word) << ' ';
-		}
-		std::cout << std::endl;
 	}
 
 	void mutateBits(float probability)

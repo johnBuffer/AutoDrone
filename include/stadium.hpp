@@ -2,6 +2,7 @@
 
 #include "selector.hpp"
 #include "drone.hpp"
+#include "objective.hpp"
 
 
 struct Stadium
@@ -69,13 +70,7 @@ struct Stadium
 
 	bool checkAlive(const Drone& drone, float tolerance) const
 	{
-		const bool in_window = 
-			drone.position.x > -tolerance * area_size.x
-			&& drone.position.x < (1.0f + tolerance)*area_size.x
-			&& drone.position.y > -tolerance * area_size.y
-			&& drone.position.y < (1.0f + tolerance) * area_size.y;
-
-		return in_window && std::abs(drone.angle) < PI;
+		return std::abs(drone.angle) < PI;
 	}
 
 	uint32_t getAliveCount() const
@@ -96,28 +91,32 @@ struct Stadium
 		if (d.alive) {
 			sf::Vector2f current_target = manual_target;
 
-			const sf::Vector2f standby_target = area_size * 0.5f;
+			sf::Vector2f standby_target;
+			const float border = 50.0f;
+			const float v_border = 120.0f;
+			const uint32_t row_size = 7;
+			const float width = (area_size.x - 2.0 * border) / float(row_size);
+			const uint32_t effective_index = d.index;
+			standby_target.x = border + (effective_index % row_size + 0.5f) * width;
+			standby_target.y = v_border + (effective_index / row_size) * 150;
 
 			if (!use_manual_target) {
 				current_target = standby_target;
 			}
+			else if (i > 0) {
+				const float angle = 2.0f * PI * (i / float(population_size));
+				current_target = area_size * 0.5f + 1200.0f * sf::Vector2f(cos(angle), sin(angle));
+			}
 			
-			const sf::Vector2f to_target = current_target - d.position;
-			float to_x = normalize(to_target.x, area_size.x);
-			float to_y = normalize(to_target.y, area_size.y);
+			const float max_dist = 700.0f;
+			sf::Vector2f to_target = current_target - d.position;
+			const float to_target_dist = getLength(to_target);
+			to_target.x /= std::max(to_target_dist, max_dist);
+			to_target.y /= std::max(to_target_dist, max_dist);
 
-			const float max_to_target = 0.4f;
-
-			if (std::abs(to_x) > max_to_target) {
-				to_x = sign(to_x) * max_to_target;
-			}
-			if (std::abs(to_y) > max_to_target) {
-				to_y = sign(to_y) * max_to_target;
-			}
-
-			std::vector<float> inputs = {
-				to_x,
-				to_y,
+			const std::vector<float> inputs = {
+				to_target.x,
+				to_target.y,
 				d.velocity.x * dt,
 				d.velocity.y * dt,
 				cos(d.angle),

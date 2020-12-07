@@ -18,12 +18,12 @@ struct DroneRenderer
 
 	DroneRenderer()
 	{
-		flame.loadFromFile("res/flame.png");
+		flame.loadFromFile("../res/flame.png");
 		flame_sprite.setTexture(flame);
 		flame_sprite.setOrigin(118.0f, 67.0f);
 		flame_sprite.setScale(0.15f, 0.15f);
 
-		smoke.loadFromFile("res/smoke.png");
+		smoke.loadFromFile("../res/smoke.png");
 		smoke_sprite.setTexture(smoke);
 		smoke_sprite.setOrigin(126, 134);
 	}

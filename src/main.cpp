@@ -4,7 +4,6 @@
 #include <event_manager.hpp>
 #include <iostream>
 
-#include "game.hpp"
 #include "dna.hpp"
 #include "selector.hpp"
 #include "number_generator.hpp"
@@ -48,8 +47,8 @@ int main()
 {
 	NumberGenerator<>::initialize();
 
-	const uint32_t win_width = 1600;
-	const uint32_t win_height = 900;
+	const uint32_t win_width = 1920;
+	const uint32_t win_height = 1080;
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 4;
 	sf::RenderWindow window(sf::VideoMode(win_width, win_height), "AutoDrone", sf::Style::Default, settings);
@@ -98,7 +97,7 @@ int main()
 	Conf conf = loadConf();
 
 	uint32_t i(0);
-	DNA dna(dna_bytes_count * 8);
+	/*DNA dna(dna_bytes_count * 8);
 	dna.code = { 156, 152, 54, 192, 55, 48, 42, 193, 2, 119, 14, 192, 140, 66, 57, 63, 85, 239, 188, 192, 183, 155, 161, 
 		         65, 15, 97, 8, 193, 190, 33, 13, 193, 155, 109, 45, 64, 30, 110, 137, 64, 131, 19, 73, 64, 218, 77, 226, 
 		         192, 213, 38, 197, 64, 138, 36, 189, 65, 251, 93, 100, 64, 120, 21, 25, 63, 96, 177, 18, 65, 104, 66, 39, 
@@ -133,7 +132,10 @@ int main()
 		         203, 17, 197, 191, 111, 127, 38, 64, 173, 254, 222, 63, 207, 47, 51, 192, 214, 153, 120, 64, 40, 73, 124, 191,
 		         65, 85, 130, 191, 246, 166, 193, 192, 68, 49, 210, 192, 204, 236, 85, 191, 65, 208, 46, 63, 21, 119, 52, 192,
 		         6, 101, 180, 191, 57, 77, 26, 193, 32, 152, 17, 192
-	};
+	};*/
+
+	DNA dna = DnaLoader::loadDnaFrom("../selector_output_7.bin", dna_bytes_count, 440);
+	std::cout << DnaLoader::getDnaCount("../selector_output_7.bin", dna_bytes_count) << std::endl;
 
 	for (Drone& d : stadium.selector.getCurrentPopulation()) {
 		d.loadDNA(dna);
@@ -145,16 +147,19 @@ int main()
 		d.right.setMaxPower(conf.max_power);
 	}
 
-	stadium.use_manual_target = true;
+	stadium.use_manual_target = false;
 
 	sf::VertexArray va_target(sf::LineStrip, 0);
 	sf::VertexArray va_drone(sf::LineStrip, 0);
 	const float new_point_distance = 8.0f;
 	sf::Vector2f last_target(0.0f, 0.0f);
 	sf::Vector2f last_drone;
-	bool draw_histo = true;
+	bool draw_histo = false;
+
+	bool full_speed = false;
 	event_manager.addKeyPressedCallback(sf::Keyboard::C, [&](sfev::CstEv ev) { va_target.clear(); va_drone.clear(); });
 	event_manager.addKeyPressedCallback(sf::Keyboard::H, [&](sfev::CstEv ev) { draw_histo = !draw_histo; });
+	event_manager.addKeyPressedCallback(sf::Keyboard::E, [&](sfev::CstEv ev) { full_speed = !full_speed; window.setFramerateLimit(!full_speed * 144); });
 
 	sf::Clock clock;
 	while (window.isOpen()) {
@@ -188,9 +193,11 @@ int main()
 
 			stadium.update(dt, true);
 
-			if (getLength(last_drone - drone.position) > new_point_distance) {
-				last_drone = drone.position;
-				va_drone.append(sf::Vertex(last_drone, colors[drone.index]));
+			if (draw_histo) {
+				if (getLength(last_drone - drone.position) > new_point_distance) {
+					last_drone = drone.position;
+					va_drone.append(sf::Vertex(last_drone, colors[drone.index]));
+				}
 			}
 
 			// Render
@@ -219,9 +226,9 @@ int main()
 				blur_target.draw(target_c);
 			}
 
-			blur_target.display();
+			/*blur_target.display();
 			sf::Sprite bloom_sprite = blur.apply(blur_target.getTexture(), 2);
-			window.draw(bloom_sprite, sf::BlendAdd);
+			window.draw(bloom_sprite, sf::BlendAdd);*/
 
 			window.display();
 		}
