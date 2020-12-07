@@ -146,7 +146,7 @@ struct Stadium
 		// Fitness stuffs
 		// We don't want weirdos
 		const float score_factor = std::pow(cos(d.angle), 2.0f);
-		d.fitness += target_radius / to_target_dist;
+		d.fitness += target_radius / (1.0f + to_target_dist);
 
 		const float out_threshold = 200.0f;
 		if (to_target_dist > out_threshold) {
