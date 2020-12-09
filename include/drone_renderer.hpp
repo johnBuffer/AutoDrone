@@ -1,25 +1,22 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "drone.hpp"
+#include "resource_manager.hpp"
 
 
 struct DroneRenderer
 {
 	sf::Texture flame;
 	sf::Sprite flame_sprite;
-
 	sf::Texture smoke;
 	sf::Sprite smoke_sprite;
+	
 	DroneRenderer()
 	{
-		flame.loadFromFile("../flame.png");
-		flame_sprite.setTexture(flame);
-		flame_sprite.setOrigin(118.0f, 67.0f);
-		flame_sprite.setScale(0.15f, 0.15f);
-
-		smoke.loadFromFile("../smoke.png");
-		smoke_sprite.setTexture(smoke);
-		smoke_sprite.setOrigin(126, 134);
+		BaseManager::RegisterTexture("flame.png", "flame");
+		BaseManager::RegisterTexture("smoke.png", "smoke");
+		flame_sprite = BaseManager::CreateSprite("flame", sf::Vector2f(0.15f, 0.15f), sf::Vector2f(118.0f, 67.0f));
+		smoke_sprite = BaseManager::CreateSprite("smoke", sf::Vector2f(1.0f, 1.0f), sf::Vector2f(126.0f, 134.0f));
 	}
 
 	void draw(const Drone::Thruster& thruster, const Drone& drone, sf::RenderTarget& target, sf::Color color, bool right, const sf::RenderStates& state)

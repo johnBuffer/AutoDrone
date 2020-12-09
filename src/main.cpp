@@ -10,6 +10,7 @@
 #include "drone.hpp"
 #include "drone_renderer.hpp"
 #include "stadium.hpp"
+#include "resource_manager.hpp"
 
 
 int main()
@@ -63,23 +64,17 @@ int main()
 	Graphic fitness_graph(1000, sf::Vector2f(700, 120), sf::Vector2f(GUI_MARGIN, win_height - 120 - GUI_MARGIN));
 	fitness_graph.color = sf::Color(96, 211, 148);
 
-	sf::Font font;
-	font.loadFromFile("../font.ttf");
-	sf::Text generation_text;
-	sf::Text best_score_text;
-	generation_text.setFont(font);
-	generation_text.setCharacterSize(42);
-	generation_text.setFillColor(sf::Color::White);
+	BaseManager::Initialize("../res/");
+	BaseManager::RegisterFont("font.ttf", "font");
+	sf::Text generation_text = BaseManager::CreateText("font", 42);
+	sf::Text best_score_text = BaseManager::CreateText("font", 32);
 	generation_text.setPosition(GUI_MARGIN * 2.0f, GUI_MARGIN);
-
-	best_score_text = generation_text;
-	best_score_text.setCharacterSize(32);
 	best_score_text.setPosition(4.0f * GUI_MARGIN, 64);
 	
-	const uint32_t pop_size = 3200;
+	const uint32_t pop_size = 800;
 	const float scale = 2.0f;
 	Stadium stadium(pop_size, scale * sf::Vector2f(win_width, win_height));
-	stadium.loadDnaFromFile("../selector_output_18.bin");
+	//stadium.loadDnaFromFile("../selector_output_18.bin");
 
 	DroneRenderer drone_renderer;
 	sf::RenderStates state;
