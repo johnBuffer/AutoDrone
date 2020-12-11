@@ -23,12 +23,12 @@ struct Selector
 	SelectionWheel wheel;
 	std::string out_file;
 	uint32_t dump_frequency = 10;
-	uint32_t current_iteration;
+	uint32_t generation;
 
 	Selector(const uint32_t agents_count)
 		: population(agents_count)
 		, population_size(agents_count)
-		, current_iteration(0)
+		, generation(0)
 		, survivings_count(as<uint32_t>(agents_count * population_conservation_ratio))
 		, elites_count(as<uint32_t>(agents_count * population_elite_ratio))
 		, wheel(survivings_count)
@@ -59,8 +59,8 @@ struct Selector
 		std::vector<T>& next_units    = population.getLast();
 		wheel.addFitnessScores(current_units);
 		// Replace the weakest
-		std::cout << "Gen: " << current_iteration << " Best: " << current_units[0].fitness << std::endl;
-		if ((current_iteration%dump_frequency) == 0) {
+		std::cout << "Gen: " << generation << " Best: " << current_units[0].fitness << std::endl;
+		if ((generation%dump_frequency) == 0) {
 			DnaLoader::writeDnaToFile(out_file, getCurrentPopulation()[0].dna);
 		}
 
@@ -99,7 +99,7 @@ struct Selector
 	void switchPopulation()
 	{
 		population.swap();
-		++current_iteration;
+		++generation;
 	}
 
 	std::vector<T>& getCurrentPopulation()

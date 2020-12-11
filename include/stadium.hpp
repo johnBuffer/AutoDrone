@@ -31,6 +31,7 @@ struct Stadium
 	sf::Vector2f area_size;
 	Iteration current_iteration;
 	swrm::Swarm swarm;
+	float max_iteration_time;
 
 	Stadium(uint32_t population, sf::Vector2f size)
 		: population_size(population)
@@ -40,6 +41,7 @@ struct Stadium
 		, objectives(population)
 		, area_size(size)
 		, swarm(8)
+		, max_iteration_time(100.0f)
 	{
 	}
 
@@ -179,15 +181,21 @@ struct Stadium
 		current_iteration.time += dt;
 	}
 
-	void initializeIteration()
+	void newIteration()
 	{
+		selector.nextGeneration();
 		initializeTargets();
 		initializeDrones();
 		current_iteration.reset();
 	}
 
-	void nextIteration()
+	bool isFirstIteration() const
 	{
-		selector.nextGeneration();
+		return selector.generation == 0;
+	}
+
+	bool isDone() const
+	{
+		return getAliveCount() == 0 || current_iteration.time > max_iteration_time || isFirstIteration();
 	}
 };
