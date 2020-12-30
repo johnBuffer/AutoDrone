@@ -139,6 +139,11 @@ public:
 		m_mouse_released_manager.addCallback(button, callback);
 	}
 
+	sf::Window& getWindow()
+	{
+		return m_window;
+	}
+
 private:
 	sf::Window& m_window;
 
