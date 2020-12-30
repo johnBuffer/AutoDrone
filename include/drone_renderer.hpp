@@ -122,7 +122,7 @@ struct DroneRenderer
 
 	void drawBody(const Drone& drone, const sf::Color& color, sf::RenderTarget& target, const sf::RenderStates& state)
 	{
-		const float angle_ratio = std::min(1.0f, std::abs(sin(drone.angle)));
+		const float angle_ratio = std::min(1.0f, std::abs(float(sin(drone.angle))));
 		const sf::Color eye_color = getRedGreenRatio(angle_ratio);
 
 		const float r = drone.radius * 1.25f;
