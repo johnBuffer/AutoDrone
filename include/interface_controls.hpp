@@ -10,9 +10,9 @@ struct InterfaceControls
 	bool draw_neural = true;
 	bool draw_drones = true;
 	bool draw_fitness = true;
-	uint64_t framerate;
+	uint32_t framerate;
 
-	InterfaceControls(sfev::EventManager& manager, uint64_t base_framerate)
+	InterfaceControls(sfev::EventManager& manager, uint32_t base_framerate)
 		: framerate(base_framerate)
 	{
 		registerCallbacks(manager);

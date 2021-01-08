@@ -2,12 +2,10 @@
 #include <event_manager.hpp>
 #include <iostream>
 
-#include "dna.hpp"
 #include "selector.hpp"
 #include "number_generator.hpp"
 #include "neural_renderer.hpp"
 #include "graph.hpp"
-#include "drone.hpp"
 #include "drone_renderer.hpp"
 #include "stadium.hpp"
 #include "resource_manager.hpp"

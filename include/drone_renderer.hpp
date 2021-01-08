@@ -90,7 +90,7 @@ struct DroneRenderer
 		power_indicator.setFillColor(sf::Color::Green);
 		power_indicator.setOrigin(width * 0.5f, height);
 		power_indicator.setRotation(angle * RAD_TO_DEG);
-		const uint8_t power_percent = thruster.power_ratio * 10;
+		const uint8_t power_percent = static_cast<uint8_t>(thruster.power_ratio * 10);
 		sf::Vector2f power_start(position + (0.5f * thruster_height - margin) * thruster_dir);
 		for (uint8_t i(0); i < power_percent; ++i) {
 			power_indicator.setPosition(power_start - float(i) * (height + margin) * thruster_dir);
@@ -117,7 +117,7 @@ struct DroneRenderer
 	sf::Color getRedGreenRatio(float ratio) const
 	{
 		const float r = std::min(1.0f, std::abs(ratio));
-		return sf::Color(255 * r, 255 * (1.0f - r), 0);
+		return sf::Color(static_cast<uint8_t>(255 * r), static_cast<uint8_t>(255 * (1.0f - r)), 0);
 	}
 
 	void drawBody(const Drone& drone, const sf::Color& color, sf::RenderTarget& target, const sf::RenderStates& state)

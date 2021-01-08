@@ -107,7 +107,7 @@ struct Stadium
 		return result;
 	}
 
-	void updateDrone(uint32_t i, float dt, bool update_smoke)
+	void updateDrone(uint64_t i, float dt, bool update_smoke)
 	{
 		Drone& d = selector.getCurrentPopulation()[i];
 		if (!d.alive) {
@@ -141,7 +141,7 @@ struct Stadium
 		d.alive = checkAlive(d, tolerance_margin);
 
 		// Fitness stuffs
-		//d.fitness += 1.0f / to_target_dist;
+		d.fitness += 1.0f / (1.0f + to_target_dist);
 		// We don't want weirdos
 		const float score_factor = std::pow(cos(d.angle), 2.0f);
 		const float target_time = 1.0f;
@@ -170,10 +170,10 @@ struct Stadium
 
 	void update(float dt, bool update_smoke)
 	{
-		const uint32_t population_size = selector.getCurrentPopulation().size();
+		const uint64_t population_size = selector.getCurrentPopulation().size();
 		auto group_update = swarm.execute([&](uint32_t thread_id, uint32_t max_thread) {
 			const uint64_t thread_width = population_size / max_thread;
-			for (uint32_t i(thread_id * thread_width); i < (thread_id + 1) * thread_width; ++i) {
+			for (uint64_t i(thread_id * thread_width); i < (thread_id + 1) * thread_width; ++i) {
 				updateDrone(i, dt, update_smoke);
 			}
 		});
