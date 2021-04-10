@@ -165,11 +165,11 @@ struct DroneRenderer
 		target.draw(c_led, state);
 
 		c_led.setOrigin(led_size, led_size - 0.45f * r);
-		c_led.setFillColor(getRedGreenRatio(1.0f - drone.network.last_input[0]));
+		c_led.setFillColor(sf::Color::Green);
 		target.draw(c_led, state);
 
 		c_led.setOrigin(led_size, led_size + 0.5f * r);
-		c_led.setFillColor(getRedGreenRatio(1.0f - drone.network.last_input[1]));
+		c_led.setFillColor(sf::Color::Green);
 		target.draw(c_led, state);
 	}
 };

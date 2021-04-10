@@ -1,28 +1,20 @@
 #pragma once
 
-#include "dna.hpp"
+#include "genom.hpp"
 
 
 struct Unit
 {
 	Unit() = default;
-	Unit(const uint64_t dna_bits_count)
-		: dna(dna_bits_count)
+	Unit(uint32_t genom)
+		: genom_id(genom)
 		, fitness(0.0f)
 		, alive(true)
 	{}
 
-	void loadDNA(const DNA& new_dna)
-	{
-		fitness = 0.0f;
-		dna = new_dna;
-
-		onUpdateDNA();
-	}
-
-	virtual void onUpdateDNA() = 0;
-
-	DNA dna;
+	virtual void setGenom(const nt::Genom& g) = 0;
+	
 	float fitness;
 	bool alive;
+	uint32_t genom_id;
 };

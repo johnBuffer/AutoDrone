@@ -1,8 +1,6 @@
 #pragma once
 
-#include <swarm.hpp>
-
-#include "selector.hpp"
+#include "neat.hpp"
 #include "drone.hpp"
 #include "objective.hpp"
 
@@ -24,14 +22,15 @@ struct Stadium
 	};
 
 	uint32_t population_size;
-	Selector<Drone> selector;
+	nt::Selector selector;
 	uint32_t targets_count;
 	std::vector<sf::Vector2f> targets;
 	std::vector<Objective> objectives;
 	sf::Vector2f area_size;
 	Iteration current_iteration;
-	swrm::Swarm swarm;
+	std::vector<Drone> drones;
 	float max_iteration_time;
+	uint32_t generation;
 
 	Stadium(uint32_t population, sf::Vector2f size)
 		: population_size(population)
@@ -40,18 +39,12 @@ struct Stadium
 		, targets(targets_count)
 		, objectives(population)
 		, area_size(size)
-		, swarm(8)
 		, max_iteration_time(100.0f)
+		, generation(0)
+		, drones(population)
 	{
-	}
-
-	void loadDnaFromFile(const std::string& filename)
-	{
-		const uint64_t bytes_count = Network::getParametersCount(architecture) * 4;
-		const uint64_t dna_count = DnaLoader::getDnaCount(filename, bytes_count);
-		for (uint64_t i(0); i < dna_count && i < population_size; ++i) {
-			const DNA dna = DnaLoader::loadDnaFrom(filename, bytes_count, i);
-			selector.getCurrentPopulation()[i].loadDNA(dna);
+		for (nt::Genom& g : selector.population) {
+			g = nt::Genom(7, 4);
 		}
 	}
 
@@ -64,20 +57,9 @@ struct Stadium
 		}
 	}
 
-	void finalizeFitness()
-	{
-		for (Drone& d : selector.getCurrentPopulation()) {
-			const Objective& current_objective = objectives[d.index];
-			const float dist = getLength(d.position - current_objective.getTarget(targets));
-			const float points = current_objective.points - dist;
-			d.fitness += std::max(0.0f, points / (1.0f + current_objective.time_out));
-		}
-	}
-
 	void initializeDrones()
 	{
 		// Initialize targets
-		auto& drones = selector.getCurrentPopulation();
 		uint32_t i = 0;
 		for (Drone& d : drones) {
 			d.index = i++;
@@ -86,6 +68,7 @@ struct Stadium
 			objective.reset();
 			objective.points = getLength(d.position - targets[0]);
 			d.reset();
+			d.setGenom(selector.population[d.index]);
 		}
 	}
 
@@ -99,7 +82,6 @@ struct Stadium
 	uint32_t getAliveCount() const
 	{
 		uint32_t result = 0;
-		const auto& drones = selector.getCurrentPopulation();
 		for (const Drone& d : drones) {
 			result += d.alive;
 		}
@@ -109,7 +91,7 @@ struct Stadium
 
 	void updateDrone(uint64_t i, float dt, bool update_smoke)
 	{
-		Drone& d = selector.getCurrentPopulation()[i];
+		Drone& d = drones[i];
 		if (!d.alive) {
 			// It's too late for it
 			return;
@@ -170,32 +152,28 @@ struct Stadium
 
 	void update(float dt, bool update_smoke)
 	{
-		const uint64_t population_size = selector.getCurrentPopulation().size();
-		auto group_update = swarm.execute([&](uint32_t thread_id, uint32_t max_thread) {
-			const uint64_t thread_width = population_size / max_thread;
-			for (uint64_t i(thread_id * thread_width); i < (thread_id + 1) * thread_width; ++i) {
-				updateDrone(i, dt, update_smoke);
-			}
-		});
-		group_update.waitExecutionDone();
+		for (uint32_t i(0); i<population_size; ++i) {
+			updateDrone(i, dt, update_smoke);
+		}
 		current_iteration.time += dt;
 	}
 
 	void newIteration()
 	{
-		selector.nextGeneration();
+		if (generation) {
+			for (const Drone& d : drones) {
+				selector.population[d.index].fitness = d.fitness;
+			}
+			selector.nextGeneration();
+		}
 		initializeTargets();
 		initializeDrones();
 		current_iteration.reset();
-	}
-
-	bool isFirstIteration() const
-	{
-		return selector.generation == 0;
+		++generation;
 	}
 
 	bool isDone() const
 	{
-		return getAliveCount() == 0 || current_iteration.time > max_iteration_time || isFirstIteration();
+		return getAliveCount() == 0 || current_iteration.time > max_iteration_time || generation == 0;
 	}
 };

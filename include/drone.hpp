@@ -3,7 +3,6 @@
 #include "ai_unit.hpp"
 #include "utils.hpp"
 #include <SFML/Graphics.hpp>
-#include <fstream>
 #include "smoke.hpp"
 
 
@@ -67,30 +66,19 @@ struct Drone : public AiUnit
 	uint32_t index;
 
 	Drone()
-		: AiUnit(architecture)
+		: AiUnit()
 		, radius(20.0f)
 		, position(0.0f, 0.0f)
 	{
-
-	}
-
-	void loadDNAFromFile(const std::string& filename)
-	{
-		std::ifstream infile(filename);
-		float value;
-		uint32_t i(0);
-		while (infile >> value) {
-			dna.set<float>(i, value);
-			++i;
-		}
-		infile.close();
+		reset();
 	}
 
 	Drone(const sf::Vector2f& pos)
-		: AiUnit(architecture)
+		: AiUnit()
 		, radius(20.0f)
 		, position(pos)
 	{
+		reset();
 	}
 
 	void reset()

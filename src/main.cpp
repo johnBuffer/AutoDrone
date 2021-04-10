@@ -2,10 +2,8 @@
 #include <event_manager.hpp>
 #include <iostream>
 
-#include "selector.hpp"
 #include "number_generator.hpp"
-#include "neural_renderer.hpp"
-#include "graph.hpp"
+#include "chart.hpp"
 #include "drone_renderer.hpp"
 #include "stadium.hpp"
 #include "resource_manager.hpp"
@@ -14,8 +12,6 @@
 
 int main()
 {
-	NumberGenerator<>::initialize();
-
 	const uint32_t win_width = 1920;
 	const uint32_t win_height = 1080;
 	sf::ContextSettings settings;
@@ -74,12 +70,12 @@ int main()
 			fitness_graph.next();
 			stadium.newIteration();
 		}
-		std::vector<Drone>& population = stadium.selector.getCurrentPopulation();
+		std::vector<Drone>& population = stadium.drones;
 
 		stadium.update(dt, !controls.full_speed);
 
 		fitness_graph.setLastValue(stadium.current_iteration.best_fitness);
-		generation_text.setString("Generation " + toString(stadium.selector.generation));
+		generation_text.setString("Generation " + toString(stadium.generation));
 		best_score_text.setString("Score " + toString(stadium.current_iteration.best_fitness));
 
 		// Render
@@ -90,7 +86,7 @@ int main()
 		uint32_t current_drone_i = 0;
 		if (controls.draw_drones) {
 			if (controls.show_just_one) {
-				const Drone& d = stadium.selector.getCurrentPopulation()[stadium.current_iteration.best_unit];
+				const Drone& d = stadium.drones[stadium.current_iteration.best_unit];
 				drone_renderer.draw(d, window, state, colors[d.index%colors.size()], !controls.full_speed);
 			}
 			else {
