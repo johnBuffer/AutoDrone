@@ -6,6 +6,7 @@
 #include "double_buffer.hpp"
 #include <fstream>
 #include <sstream>
+#include <chrono>
 #include "dna_loader.hpp"
 
 
@@ -24,6 +25,7 @@ struct Selector
 	std::string out_file;
 	uint32_t dump_frequency = 10;
 	uint32_t generation;
+	std::chrono::time_point<std::chrono::high_resolution_clock> start_time = std::chrono::high_resolution_clock::now();
 
 	Selector(const uint32_t agents_count)
 		: population(agents_count)
@@ -59,7 +61,8 @@ struct Selector
 		std::vector<T>& next_units    = population.getLast();
 		wheel.addFitnessScores(current_units);
 		// Replace the weakest
-		std::cout << "Gen: " << generation << " Best: " << current_units[0].fitness << std::endl;
+		std::chrono::duration<double> diff = std::chrono::high_resolution_clock::now() - start_time;
+		std::cout << std::fixed << std::setprecision(3) << diff.count() << " Gen: " << generation << " Best: " << current_units[0].fitness << std::endl;
 		if ((generation%dump_frequency) == 0) {
 			DnaLoader::writeDnaToFile(out_file, getCurrentPopulation()[0].dna);
 		}

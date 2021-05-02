@@ -30,17 +30,23 @@ struct DnaLoader
 			infile.seekg(offset * bytes_count, std::ios_base::beg);
 		}
 		else {
-			infile.seekg(offset * bytes_count, std::ios_base::end);
+			infile.seekg(-(std::streamoff)(offset + 1) * bytes_count, std::ios_base::end);
 		}
 
 		std::vector<float> test_vec(202);
 		if (!infile.read((char*)test_vec.data(), bytes_count)) {
-			std::cout << "Error while reading file." << std::endl;
+			std::cout << "Error 1 while reading file at " << offset << std::endl;
 		}
 
-		infile.seekg(offset * bytes_count, std::ios_base::beg);
+		if (!from_end) {
+			infile.seekg(offset * bytes_count * -1, std::ios_base::beg);
+		}
+		else {
+			infile.seekg(-(std::streamoff)(offset + 1) * bytes_count, std::ios_base::end);
+		}
+
 		if (!infile.read((char*)dna.code.data(), bytes_count)) {
-			std::cout << "Error while reading file." << std::endl;
+			std::cout << "Error 2 while reading file at " << offset << std::endl;
 		}
 
 		return dna;

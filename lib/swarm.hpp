@@ -218,10 +218,13 @@ public:
 			group_size = m_thread_count;
 		}
 
+		waitWorkersReady();
+
 		if (group_size > m_available_workers.size()) {
 			return WorkGroup();
 		}
-
+		
+		std::lock_guard<std::mutex> lg(m_mutex);
 		return WorkGroup(std::make_unique<ExecutionGroup>(job, group_size, m_available_workers));
 	}
 
@@ -253,6 +256,12 @@ private:
 		std::lock_guard<std::mutex> lg(m_mutex);
 		++m_ready_count;
 		m_available_workers.push_back(worker);
+	}
+
+	void waitWorkersReady() {
+		while(m_available_workers.size() < m_workers.size())
+			std::this_thread::yield();
+		m_ready_count = 0;
 	}
 
 	friend Worker;
