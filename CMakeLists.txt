@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(PROJECT_NAME AutoDrone)
 project(${PROJECT_NAME} VERSION 1.0.0 LANGUAGES CXX)
 find_package(OpenGL)
